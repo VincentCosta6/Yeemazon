@@ -24,6 +24,9 @@ let userSchema = mongoose.Schema({
 	}],
 	orders : [{
 		type : String
+	}],
+	sessionKeys : [{
+		type : String
 	}]
 });
 

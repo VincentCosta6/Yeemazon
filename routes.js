@@ -335,12 +335,12 @@ router.post("/generateDevKey", function(req, res){
 });
 
 router.get("/updateSchema", function(req, res) {
-	/*users.find({}, (err, users) => {
+	users.find({}, (err, users) => {
 		for(let i in users)
 		{
-			if(!users[i].orders)
+			if(!users[i].sessionKeys)
 			{
-				users[i].orders = [];
+				users[i].sessionKeys = [];
 			}
 			users[i].save((err) => {
 				if(err) console.log(err);
@@ -348,7 +348,7 @@ router.get("/updateSchema", function(req, res) {
 			})
 		}
 
-	});*/
+	});
 });
 let devKeys = [];
 
