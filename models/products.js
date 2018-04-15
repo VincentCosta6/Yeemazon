@@ -23,6 +23,7 @@ let productSchema = mongoose.Schema({
 	}],
 	clicks : {
 		type : Number,
+		default : 0,
 		require : true
 	},
 	usersClicked : [{
@@ -30,10 +31,12 @@ let productSchema = mongoose.Schema({
 		require : true
 	}],
 	numOrders : {
-		type : Number
+		type : Number,
+		default : 0
 	},
 	creator : {
-		type : String
+		type : String,
+		required : true
 	}
 });
 

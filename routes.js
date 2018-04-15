@@ -14,6 +14,7 @@ const saltRounds = startup.saltRounds;
 const mongoose = require('mongoose');
 const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
+const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 
@@ -230,7 +231,6 @@ router.post("/logout", function(req, res){
 
 
 router.post("/addItem", function(req, res) {
-
 	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
@@ -240,11 +240,14 @@ router.post("/addItem", function(req, res) {
 		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
 		if(!check.passed)	return res.json(check.reason);
 
-		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords
+		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/" + req.files.pic.name, keywords : req.body.keywords, creator : user.username, usersClicked : []
 
 		};
-		db.collection('products').insert(newItem);
-		return res.json({status:"Success"});
+		req.files.pic.mv("./public/images/" + req.body.pic.name, (err) => {
+			if(err) throw err;
+			db.collection('products').insert(newItem);
+			return res.json({status:"Success"});
+		});
 
 	});
 
@@ -256,19 +259,48 @@ router.post("/changeItem", function(req, res) {
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check.reason);
 
-	let item = {
-		name : req.body.name,
-		description : req.body.description,
-		price : req.body.price,
-		link : ".images",
-		keywords : req.body.keywords,
-	};
-	products.findOneAndUpdate({_id:req.body._id}, item, {upsert:true}, (err, item) => {
+	users.findOne({username:req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		return res.json({status:"Successfully changed item"});
+		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		if(!check.passed)	return res.json(check.reason);
+		products.findOne({_id:req.body._id}, (err, item) => {
+			if(err) throw err;
+			if(!item)
+				return res.json({status:"Item not found"});
+			var newItem = {};
+			var changed = false;
+			if(req.body.name !== item.name)	{
+				newItem.name = req.body.name;
+				changed = true;
+			}
+			if(req.body.description !== item.description) {
+				item.description = req.body.description;
+				changed = true;
+			}
+			if(req.body.price !== item.price) {
+				item.price = req.body.price;
+				changed = true;
+			}
+			if(req.body.link !== item.link) {
+				item.link = req.body.link;
+				changed = true;
+			}
+			if(!arraysAreEqual(req.body.keywords, item.keywords)) {
+				item.keywords = req.body.keywords;
+				changed = true;
+			}
+			if(changed){
+				item.save((err) => {
+					if(err) console.log(err);
+					else return res.json({status:"Item Successfully changed!"});
+				});
+			}
+			else {
+				return res.json({status:"No Changes found"});
+			}
+
+		});
 	});
 });
 
@@ -277,7 +309,7 @@ router.post("/deleteItem", function(req, res) {
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
+	let check = permissionAndXSSCheck(user, "admin", bodyChecks);
 	if(!check.passed)	return res.json(check.reason);
 
 	products.findOneAndRemove({_id:req.body._id}, (err, item) => {
@@ -576,7 +608,52 @@ function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
 	});
 }
 
+function arraysAreEqual(value, other) {
+	var type = Object.prototype.toString.call(value);
 
+	if (type !== Object.prototype.toString.call(other)) return false;
+
+	if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false;
+
+	var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
+	var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+	if (valueLen !== otherLen) return false;
+
+	var compare = function (item1, item2) {
+
+		var itemType = Object.prototype.toString.call(item1);
+
+		if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+			if (!isEqual(item1, item2)) return false;
+		}
+
+		else {
+
+			if (itemType !== Object.prototype.toString.call(item2)) return false;
+
+			if (itemType === '[object Function]') {
+				if (item1.toString() !== item2.toString()) return false;
+			} else {
+				if (item1 !== item2) return false;
+			}
+
+		}
+	};
+
+	if (type === '[object Array]') {
+		for (var i = 0; i < valueLen; i++) {
+			if (compare(value[i], other[i]) === false) return false;
+		}
+	} else {
+		for (var key in value) {
+			if (value.hasOwnProperty(key)) {
+				if (compare(value[key], other[key]) === false) return false;
+			}
+		}
+	}
+
+	return true;
+}
 ////////////////////////END OF FUNCTIONS///////////////////////////////////////////////////////
 
 

@@ -1,6 +1,7 @@
 var myIP = require("ip");
 var express = require('express');
 var bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
 
 var startup = require('./startup');
 
@@ -23,6 +24,7 @@ app.use('/views', express.static('./public/views'));
 app.use('/css', express.static('./public/css'));
 app.use('/js', express.static('./public/js'));
 app.use('/images', express.static('./public/images'));
+app.use(fileUpload());
 app.use(routes);
 
 if(startup.https === true)
