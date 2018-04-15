@@ -12,22 +12,26 @@ const bcrypt = require('bcrypt');
 const saltRounds = startup.saltRounds;
 
 const mongoose = require('mongoose');
+const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
 const path = require('path');
 const fs = require('fs');
 
-mongoose.connect(startup.link);
+mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
 let db = mongoose.connection;
-let Product = require('./models/product');
-let users = require('./models/user');
+let products = require('./models/products');
+let users = require('./models/users');
 
-db.once('open',function(){
+
+
+
+db.once('open',function() {
 	console.log("Connected to remote db.");
 
 	users.count({}, (err, count) => {
 		console.log("Number of users: " + count);
 	});
-	Product.count({}, (err, count) => {
+	products.count({}, (err, count) => {
 		console.log("Number of products: " + count);
 	});
 });
@@ -74,7 +78,7 @@ for(let i in getters)
 router.get("/itemInfo", function(req, res){
 	if(!req.query.id || req.query.id === "")
 		return res.json({error:"Enter an ID RYAN"});
-	Product.find({_id:req.query.id},function(err,products){
+	products.find({_id:req.query.id},function(err,products){
 		if(err) throw err;
 		return res.json(products);
 	});
@@ -82,7 +86,7 @@ router.get("/itemInfo", function(req, res){
 
 router.get("/findItem", function(req, res){
 	if(!req.query.name || req.query.name !== "")
-	Product.findOne({name:req.query.name},function(err,products){
+	products.findOne({name:req.query.name},function(err,products){
 		if (err) throw err;
 		return res.json({item:products});
 	});
@@ -90,15 +94,15 @@ router.get("/findItem", function(req, res){
 
 router.get("/findItems", function(req, res){
 	if(!req.query.keywords || req.query.keywords !== [])
-	Product.find({keywords:req.query.keywords},function(err,products){
+	products.find({keywords:req.query.keywords},function(err,products){
 		if (err) throw err;
-		return res.json({items:products});
+		return res.json({items:products, appending : req.query.appending});
 	});
 });
 
 router.get("/getItemInfo", function(req, res){
 
-	Product.find({_id:req.query.itemID},function(err,products){
+	products.find({_id:req.query.itemID},function(err,products){
 		if(err) throw err;
 		return res.json({item:products});
 	});
@@ -120,7 +124,7 @@ router.get("/userInfo",function(req,res){
 router.get("/cartItems", function(req, res){
 	users.findOne({username : req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		Product.find({_id: {$in : user.Cart}}, (err, products) => {
+		products.find({_id: {$in : user.Cart}}, (err, products) => {
 			if(err) throw err;
 			return res.json({items:products});
 		});
@@ -215,16 +219,20 @@ router.post("/addItem", function(req, res) {
 	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	users.findOne({username:req.session_state.username}, (err, user) => {
+		if(err) throw err;
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check.reason);
+		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		if(!check.passed)	return res.json(check.reason);
 
-	let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords
+		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords
 
-	};
-	//if(arrayContainsXSSInjection(newItem))
-	db.collection('products').insert(newItem);
-	return res.json({status:"Success"});
+		};
+		db.collection('products').insert(newItem);
+		return res.json({status:"Success"});
+
+	});
+
 });
 
 router.post("/changeItem", function(req, res) {
@@ -243,7 +251,7 @@ router.post("/changeItem", function(req, res) {
 		link : ".images",
 		keywords : req.body.keywords,
 	};
-	Product.findOneAndUpdate({_id:req.body._id}, item, {upsert:true}, (err, item) => {
+	products.findOneAndUpdate({_id:req.body._id}, item, {upsert:true}, (err, item) => {
 		if(err) throw err;
 		return res.json({status:"Successfully changed item"});
 	});
@@ -257,8 +265,8 @@ router.post("/deleteItem", function(req, res) {
 	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
 	if(!check.passed)	return res.json(check.reason);
 
-	Product.findOneAndRemove({_id:req.body._id}, (err, item) => {
-		if(err) return res.json({passed : false, reason : "Item not found"});
+	products.findOneAndRemove({_id:req.body._id}, (err, item) => {
+		if(err || !item) return res.json({passed : false, reason : "Item not found"});
 		return res.json({passed:true});
 	});
 });
@@ -285,7 +293,7 @@ router.post("/removeFromCart", function(req, res) {
 router.post("/itemClicked", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	Product.findOne({_id:req.body.itemID}, (err, product) => {
+	products.findOne({_id:req.body.itemID}, (err, product) => {
 			product.clicks++;
 			let found = false;
 			for(let i in product.usersClicked)
@@ -295,10 +303,7 @@ router.post("/itemClicked", function(req, res) {
 					break;
 				}
 			if(!found)
-			{
-				product.uniqueClicks++;
 				product.usersClicked.push(req.session_state.username);
-			}
 			product.save((err) => {
 				if(err) throw err;
 			});
@@ -325,6 +330,27 @@ router.post("/sendMessage", function(req, res) {
 	});
 });
 
+router.post("/generateDevKey", function(req, res){
+
+});
+
+router.get("/updateSchema", function(req, res) {
+	/*users.find({}, (err, users) => {
+		for(let i in users)
+		{
+			if(!users[i].orders)
+			{
+				users[i].orders = [];
+			}
+			users[i].save((err) => {
+				if(err) console.log(err);
+				else console.log("User updated: " + users[i]._id);
+			})
+		}
+
+	});*/
+});
+let devKeys = [];
 
 //////////////////////////END OF POST REQUESTS//////////////////////////////
 
@@ -334,8 +360,8 @@ router.post("/sendMessage", function(req, res) {
 
 
 
-function permissionAndXSSCheck(username, permissionLevel, arrayCheck) {
-	//if(!userHasPermission(username, permissionLevel)) return {passed : false, reason : "Permission not high enough"};
+function permissionAndXSSCheck(user, permissionLevel, arrayCheck) {
+	if(userHasPermission(user.permission, permissionLevel)) return {passed : false, reason : "Permission not high enough"};
 
 	if(arrayContainsXSSInjection(arrayCheck)) return {passed : false, reason : "Parameters contain XSS Injection Possibility"};
 
@@ -365,7 +391,7 @@ function arrayContainsXSSInjection(array) {
 	let found = false;
 	for(let i = 0; (i < array.length && !found); i++)
 		if(Array.isArray(array[i]))
-			found = requestContainsXSSInjection(array[i]);
+			found = arrayContainsXSSInjection(array[i]);
 		else if(array[i].includes("<"))
 			found = true;
 	return found;
@@ -385,7 +411,7 @@ function checkForBug(req, isSignup = false) {
 
 }
 
-function bannedCheck(ip) {
+function isIPBanned(ip) {
 	for (let i = 0; i < banned.length; i++)
 		if(ip === banned[i])
 			return true;
@@ -394,7 +420,7 @@ function bannedCheck(ip) {
 
 function loginAttempt(req, res) {
 	let ip = getIP(req);
-	if(bannedCheck(ip)) return res.json({status:"Banned"});
+	if(isIPBanned(ip)) return res.json({status:"Banned"});
 
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
@@ -508,11 +534,8 @@ function userExistsFromIP(req) {
 			return true;
 }
 
-function userHasPermission(username, permissionLevel){
-	users.findOne({username:username}, (err, user) => {
-		if(err) throw err;
-		return user.permission === permissionLevel;
-	});
+function userHasPermission(userPermission, permissionLevel){ /// will update for actual permission levels, not so that they are exactly the same
+	return userPermission === permissionLevel;
 }
 
 function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {

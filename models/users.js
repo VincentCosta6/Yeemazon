@@ -21,6 +21,9 @@ let userSchema = mongoose.Schema({
 	Cart: [{
 		type: String,
 		require: true
+	}],
+	orders : [{
+		type : String
 	}]
 });
 
