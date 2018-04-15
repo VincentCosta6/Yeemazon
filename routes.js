@@ -54,7 +54,6 @@ let transporter = nodemailer.createTransport({
 	secure:true
 });
 
-let loggers = [];
 let verificationKeys = [];
 let tryers = [];
 let banned = [];
@@ -110,14 +109,29 @@ router.get("/getItemInfo", function(req, res){
 
 
 router.get("/userInfo",function(req,res){
-	console.log("Userinfo requested");
-	if(!req.session_state || req.session_state.active === false || !userExistsFromIP(req)) {
+	if(!req.session_state || req.session_state.active === false || !req.session_state.key) {
 		req.session_state.reset();
+		console.log("Resetting session");
 		return res.json({redirect:"/"});
 	}
+	var ip = getIP(req);
 	users.findOne({username:req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		return res.json({user:user});
+		var ipFound = false;
+		for(let i in user.IPs)
+			if(user.IPs[i] === ip)
+				ipFound = true;
+
+		var sessionFound = false;
+		for(let i in user.sessionKeys)
+			if(user.sessionKeys[i] === req.session_state.key)
+				sessionFound = true;
+		if(ipFound&&sessionFound)
+			return res.json({user:user});
+		else{
+			req.session_state.reset();
+			return res.json({redirect:"/"});
+		}
 	});
 });
 
@@ -138,9 +152,8 @@ router.get("/verify", function(req, res){
 		{
 			users.update({username:verificationKeys[i][1]}, {$push: {IPs : verificationKeys[i][2]}}, function(err, user){
 				if(err) throw err;
-				loggers[loggers.length] = [user.username, verificationKeys[i][2]];
+				return res.json({status:"IP has been verified"});
 			});
-			return res.json({status:"IP has been verified"});
 		}
 	return res.json({error:"Code is invalid or has expired!"});
 });
@@ -162,8 +175,6 @@ router.post("/login", loginAttempt);
 
 router.post("/signup", function(req, res){
 	let ip = getIP(req);
-	if(userExistsFromIP(req) !== undefined)
-		return res.json({success:false, status: "You are currently logged in, please sign out first"});
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
 		if(user !== null)
@@ -183,10 +194,14 @@ router.post("/signup", function(req, res){
 		if(check = checkForBug(req, true))
 			return res.json(check);
 
+		let sessionKey = uuidv4();
+
 		req.session_state.username = req.body.username;
 		req.session_state.email = req.body.email;
 		req.session_state.password = req.body.password;
 		req.session_state.active = true;
+		req.session_state.key = sessionKey;
+
 
 		let hashed = bcrypt.hashSync(req.body.password, saltRounds);
 		let newUser = {
@@ -195,22 +210,22 @@ router.post("/signup", function(req, res){
 			email : req.body.email,
 			password : hashed,
 			IPs : [ip],
-			Cart : []
+			Cart : [],
+			orders : [],
+			sessionKeys : [sessionKey]
 		}
 		db.collection('users').insert(newUser);
 
-		loggers[loggers.length] = [newUser, ip];
 		return res.json({redirect: "/session"});
 	});
 });
 
 router.post("/logout", function(req, res){
-	let ip = getIP(req);
-	for(let i=0;i<loggers.length;i++)
-		if(loggers[i][1] === ip)
-			loggers.splice(i,1);
-	req.session_state.reset();
-	return res.json({redirect: "/"});
+	users.update({username:req.session_state.username}, { $pull: { sessionKeys: req.session_state.key}}, (err) => {
+		if(err) throw err;
+		req.session_state.reset();
+		return res.json({redirect: "/"});
+	})
 });
 
 
@@ -447,13 +462,17 @@ function loginAttempt(req, res) {
 
 			if(IPExistsOnUser||req.body.username === "admin")
 			{
-				loggers[loggers.length] = [user.username, ip];
 				req.session_state.username = req.body.username;
 				req.session_state.email = req.body.email;
 				req.session_state.password = req.body.password;
 				req.session_state.active = true;
-				res.json({redirect:"/session"});
-				console.log("User: " + user.username + " has logged in on IP: " + ip);
+				var sessionKey = uuidv4();
+				req.session_state.key = sessionKey;
+				user.sessionKeys.push(sessionKey);
+				user.save((err) =>{
+					console.log("User: " + user.username + " has logged in on IP: " + ip);
+					res.json({redirect:"/session"});
+				});
 			}
 			else
 			{
@@ -525,13 +544,6 @@ function verificationExists(username) {
 		if(verificationKeys[i][1].username === username)
 			return true;
 	return false;
-}
-
-function userExistsFromIP(req) {
-	let ip = getIP(req);
-	for(let i=0;i<loggers.length;i++)
-		if(loggers[i][1] === ip)
-			return true;
 }
 
 function userHasPermission(userPermission, permissionLevel){ /// will update for actual permission levels, not so that they are exactly the same

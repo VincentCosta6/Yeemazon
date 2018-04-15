@@ -1,9 +1,9 @@
 function sendLogin()
 {
 	$.ajax({
-            url:"/login", 
-            type:"POST", 
-            data: {username:$("#username").val(), password:$("#password").val(), ref:(window.location.href.split("/")[2])}, 
+            url:"/login",
+            type:"POST",
+            data: {username:$("#username").val(), password:$("#password").val(), ref:(window.location.href.split("/")[2])},
             success: redirect,
             dataType : "json"
         });
@@ -19,7 +19,8 @@ function sendSignup()
 {
 	window.location = window.location.href.split("/")[1] + "/signup";
 }
-$(document).ready(function(){ 
+$(document).ready(function(){
+	$.get("/userInfo", success);
 	$("#request").click(sendLogin);
 	$("#signup").click(sendSignup);
 
@@ -28,3 +29,8 @@ $(document).ready(function(){
       $('#request').click();
     });
 });
+function success(data)
+{
+	if(!data.redirect)
+		window.location = window.location.href.split("/")[1] + "/session";
+}

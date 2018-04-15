@@ -21,7 +21,7 @@ let productSchema = mongoose.Schema({
 		type: String,
 		require : true
 	}],
-	clicks : { 
+	clicks : {
 		type : Number,
 		require : true
 	},
