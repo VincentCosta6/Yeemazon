@@ -14,6 +14,10 @@ let userSchema = mongoose.Schema({
 		type: String,
 		require: true
 	},
+	permission:{
+		type: String,
+		require:true
+	},
 	IPs: [{
 		type: String,
 		require: true
@@ -21,6 +25,12 @@ let userSchema = mongoose.Schema({
 	Cart: [{
 		type: String,
 		require: true
+	}],
+	orders : [{
+		type : String
+	}],
+	sessionKeys : [{
+		type : String
 	}]
 });
 

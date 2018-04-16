@@ -18,10 +18,12 @@ $(document).ready(function(){
 		for(var i = 0; i < data.items.length; i++) {
 
 			let id = data.items[i]._id;
-			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
+			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \""+ id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
 			$(".orderHolder").append(divCreator);
-			$("#" + id).click(function(){window.location = window.location.href.split("/")[1] + "/item?id=" + id});
-
+			var redirect = function(){window.location = window.location.href.split("/")[1] + "/item?id=" + id};
+			var remover = function(){$.post("/removeFromCart", {itemID : id}, (data) => {$("#" + id).remove();alert("Successful removal");})};
+			$("#" + id + "imger").click(redirect);
+			$("#" + id + "remover").click(remover);
 		}
 
 		//scale the back of the page to compensate for number of items

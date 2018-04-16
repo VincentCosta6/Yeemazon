@@ -12,22 +12,27 @@ const bcrypt = require('bcrypt');
 const saltRounds = startup.saltRounds;
 
 const mongoose = require('mongoose');
+const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
+const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 
-mongoose.connect(startup.link);
+mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
 let db = mongoose.connection;
-let Product = require('./models/product');
-let users = require('./models/user');
+let products = require('./models/products');
+let users = require('./models/users');
 
-db.once('open',function(){
+
+
+
+db.once('open',function() {
 	console.log("Connected to remote db.");
 
 	users.count({}, (err, count) => {
 		console.log("Number of users: " + count);
 	});
-	Product.count({}, (err, count) => {
+	products.count({}, (err, count) => {
 		console.log("Number of products: " + count);
 	});
 });
@@ -50,7 +55,6 @@ let transporter = nodemailer.createTransport({
 	secure:true
 });
 
-let loggers = [];
 let verificationKeys = [];
 let tryers = [];
 let banned = [];
@@ -74,7 +78,7 @@ for(let i in getters)
 router.get("/itemInfo", function(req, res){
 	if(!req.query.id || req.query.id === "")
 		return res.json({error:"Enter an ID RYAN"});
-	Product.find({_id:req.query.id},function(err,products){
+	products.find({_id:req.query.id},function(err,products){
 		if(err) throw err;
 		return res.json(products);
 	});
@@ -82,7 +86,7 @@ router.get("/itemInfo", function(req, res){
 
 router.get("/findItem", function(req, res){
 	if(!req.query.name || req.query.name !== "")
-	Product.findOne({name:req.query.name},function(err,products){
+	products.findOne({name:req.query.name},function(err,products){
 		if (err) throw err;
 		return res.json({item:products});
 	});
@@ -90,15 +94,15 @@ router.get("/findItem", function(req, res){
 
 router.get("/findItems", function(req, res){
 	if(!req.query.keywords || req.query.keywords !== [])
-	Product.find({keywords:req.query.keywords},function(err,products){
+	products.find({keywords:req.query.keywords},function(err,products){
 		if (err) throw err;
-		return res.json({items:products});
+		return res.json({items:products, appending : req.query.appending});
 	});
 });
 
 router.get("/getItemInfo", function(req, res){
 
-	Product.find({_id:req.query.itemID},function(err,products){
+	products.find({_id:req.query.itemID},function(err,products){
 		if(err) throw err;
 		return res.json({item:products});
 	});
@@ -106,21 +110,36 @@ router.get("/getItemInfo", function(req, res){
 
 
 router.get("/userInfo",function(req,res){
-	console.log("Userinfo requested");
-	if(!req.session_state || req.session_state.active === false || !userExistsFromIP(req)) {
+	if(!req.session_state || req.session_state.active === false || !req.session_state.key) {
 		req.session_state.reset();
+		console.log("Resetting session");
 		return res.json({redirect:"/"});
 	}
+	var ip = getIP(req);
 	users.findOne({username:req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		return res.json({user:user});
+		var ipFound = false;
+		for(let i in user.IPs)
+			if(user.IPs[i] === ip)
+				ipFound = true;
+
+		var sessionFound = false;
+		for(let i in user.sessionKeys)
+			if(user.sessionKeys[i] === req.session_state.key)
+				sessionFound = true;
+		if(ipFound&&sessionFound)
+			return res.json({user:user});
+		else{
+			req.session_state.reset();
+			return res.json({redirect:"/"});
+		}
 	});
 });
 
 router.get("/cartItems", function(req, res){
 	users.findOne({username : req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		Product.find({_id: {$in : user.Cart}}, (err, products) => {
+		products.find({_id: {$in : user.Cart}}, (err, products) => {
 			if(err) throw err;
 			return res.json({items:products});
 		});
@@ -134,9 +153,8 @@ router.get("/verify", function(req, res){
 		{
 			users.update({username:verificationKeys[i][1]}, {$push: {IPs : verificationKeys[i][2]}}, function(err, user){
 				if(err) throw err;
-				loggers[loggers.length] = [user.username, verificationKeys[i][2]];
+				return res.json({status:"IP has been verified"});
 			});
-			return res.json({status:"IP has been verified"});
 		}
 	return res.json({error:"Code is invalid or has expired!"});
 });
@@ -158,8 +176,6 @@ router.post("/login", loginAttempt);
 
 router.post("/signup", function(req, res){
 	let ip = getIP(req);
-	if(userExistsFromIP(req) !== undefined)
-		return res.json({success:false, status: "You are currently logged in, please sign out first"});
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
 		if(user !== null)
@@ -179,10 +195,14 @@ router.post("/signup", function(req, res){
 		if(check = checkForBug(req, true))
 			return res.json(check);
 
+		let sessionKey = uuidv4();
+
 		req.session_state.username = req.body.username;
 		req.session_state.email = req.body.email;
 		req.session_state.password = req.body.password;
 		req.session_state.active = true;
+		req.session_state.key = sessionKey;
+
 
 		let hashed = bcrypt.hashSync(req.body.password, saltRounds);
 		let newUser = {
@@ -190,41 +210,45 @@ router.post("/signup", function(req, res){
 			username : req.body.username,
 			email : req.body.email,
 			password : hashed,
+			permission : "user",
 			IPs : [ip],
-			Cart : []
+			Cart : [],
+			orders : [],
+			sessionKeys : [sessionKey]
 		}
 		db.collection('users').insert(newUser);
 
-		loggers[loggers.length] = [newUser, ip];
 		return res.json({redirect: "/session"});
 	});
 });
 
 router.post("/logout", function(req, res){
-	let ip = getIP(req);
-	for(let i=0;i<loggers.length;i++)
-		if(loggers[i][1] === ip)
-			loggers.splice(i,1);
-	req.session_state.reset();
-	return res.json({redirect: "/"});
+	users.update({username:req.session_state.username}, { $pull: { sessionKeys: req.session_state.key}}, (err) => {
+		if(err) throw err;
+		req.session_state.reset();
+		return res.json({redirect: "/"});
+	})
 });
 
 
 router.post("/addItem", function(req, res) {
-
 	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	users.findOne({username:req.session_state.username}, (err, user) => {
+		if(err) throw err;
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check.reason);
+		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		if(!check.passed)	return res.json({passed:false,reason:check.reason});
+		console.log(check.passed);
+		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords, creator : user.username, usersClicked : []
 
-	let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords
+		};
+		db.collection('products').insert(newItem);
+		return res.json({passed:true, reason:"Success"});
 
-	};
-	//if(arrayContainsXSSInjection(newItem))
-	db.collection('products').insert(newItem);
-	return res.json({status:"Success"});
+	});
+
 });
 
 router.post("/changeItem", function(req, res) {
@@ -233,19 +257,48 @@ router.post("/changeItem", function(req, res) {
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check.reason);
 
-	let item = {
-		name : req.body.name,
-		description : req.body.description,
-		price : req.body.price,
-		link : ".images",
-		keywords : req.body.keywords,
-	};
-	Product.findOneAndUpdate({_id:req.body._id}, item, {upsert:true}, (err, item) => {
+	users.findOne({username:req.session_state.username}, (err, user) => {
 		if(err) throw err;
-		return res.json({status:"Successfully changed item"});
+		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		if(!check.passed)	return res.json(check.reason);
+		products.findOne({_id:req.body._id}, (err, item) => {
+			if(err) throw err;
+			if(!item)
+				return res.json({status:"Item not found"});
+			var newItem = {};
+			var changed = false;
+			if(req.body.name !== item.name)	{
+				newItem.name = req.body.name;
+				changed = true;
+			}
+			if(req.body.description !== item.description) {
+				item.description = req.body.description;
+				changed = true;
+			}
+			if(req.body.price !== item.price) {
+				item.price = req.body.price;
+				changed = true;
+			}
+			if(req.body.link !== item.link) {
+				item.link = req.body.link;
+				changed = true;
+			}
+			if(!arraysAreEqual(req.body.keywords, item.keywords)) {
+				item.keywords = req.body.keywords;
+				changed = true;
+			}
+			if(changed){
+				item.save((err) => {
+					if(err) console.log(err);
+					else return res.json({status:"Item Successfully changed!"});
+				});
+			}
+			else {
+				return res.json({status:"No Changes found"});
+			}
+
+		});
 	});
 });
 
@@ -254,11 +307,11 @@ router.post("/deleteItem", function(req, res) {
 
 	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	let check = permissionAndXSSCheck(req.session_state.username, "admin", bodyChecks);
+	let check = permissionAndXSSCheck(user, "admin", bodyChecks);
 	if(!check.passed)	return res.json(check.reason);
 
-	Product.findOneAndRemove({_id:req.body._id}, (err, item) => {
-		if(err) return res.json({passed : false, reason : "Item not found"});
+	products.findOneAndRemove({_id:req.body._id}, (err, item) => {
+		if(err || !item) return res.json({passed : false, reason : "Item not found"});
 		return res.json({passed:true});
 	});
 });
@@ -285,7 +338,7 @@ router.post("/removeFromCart", function(req, res) {
 router.post("/itemClicked", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	Product.findOne({_id:req.body.itemID}, (err, product) => {
+	products.findOne({_id:req.body.itemID}, (err, product) => {
 			product.clicks++;
 			let found = false;
 			for(let i in product.usersClicked)
@@ -295,10 +348,7 @@ router.post("/itemClicked", function(req, res) {
 					break;
 				}
 			if(!found)
-			{
-				product.uniqueClicks++;
 				product.usersClicked.push(req.session_state.username);
-			}
 			product.save((err) => {
 				if(err) throw err;
 			});
@@ -325,6 +375,28 @@ router.post("/sendMessage", function(req, res) {
 	});
 });
 
+router.post("/generateDevKey", function(req, res){
+
+});
+
+router.get("/updateSchema", function(req, res) {
+	users.find({}, (err, users) => {
+		for(let i in users)
+		{
+			if(!users[i].permission)
+			{
+				users[i].permission = (users[i].username === "admin") ? "admin" : "user";
+
+				users[i].save((err) => {
+					if(err) console.log(err);
+					else console.log("User updated: " + users[i]._id);
+				});
+			}
+		}
+
+	});
+});
+let devKeys = [];
 
 //////////////////////////END OF POST REQUESTS//////////////////////////////
 
@@ -334,8 +406,8 @@ router.post("/sendMessage", function(req, res) {
 
 
 
-function permissionAndXSSCheck(username, permissionLevel, arrayCheck) {
-	//if(!userHasPermission(username, permissionLevel)) return {passed : false, reason : "Permission not high enough"};
+function permissionAndXSSCheck(user, permissionLevel, arrayCheck) {
+	if(user.permission !== permissionLevel) return {passed : false, reason : "Permission not high enough"};
 
 	if(arrayContainsXSSInjection(arrayCheck)) return {passed : false, reason : "Parameters contain XSS Injection Possibility"};
 
@@ -365,7 +437,7 @@ function arrayContainsXSSInjection(array) {
 	let found = false;
 	for(let i = 0; (i < array.length && !found); i++)
 		if(Array.isArray(array[i]))
-			found = requestContainsXSSInjection(array[i]);
+			found = arrayContainsXSSInjection(array[i]);
 		else if(array[i].includes("<"))
 			found = true;
 	return found;
@@ -385,7 +457,7 @@ function checkForBug(req, isSignup = false) {
 
 }
 
-function bannedCheck(ip) {
+function isIPBanned(ip) {
 	for (let i = 0; i < banned.length; i++)
 		if(ip === banned[i])
 			return true;
@@ -394,7 +466,7 @@ function bannedCheck(ip) {
 
 function loginAttempt(req, res) {
 	let ip = getIP(req);
-	if(bannedCheck(ip)) return res.json({status:"Banned"});
+	if(isIPBanned(ip)) return res.json({status:"Banned"});
 
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
@@ -421,13 +493,17 @@ function loginAttempt(req, res) {
 
 			if(IPExistsOnUser||req.body.username === "admin")
 			{
-				loggers[loggers.length] = [user.username, ip];
 				req.session_state.username = req.body.username;
 				req.session_state.email = req.body.email;
 				req.session_state.password = req.body.password;
 				req.session_state.active = true;
-				res.json({redirect:"/session"});
-				console.log("User: " + user.username + " has logged in on IP: " + ip);
+				var sessionKey = uuidv4();
+				req.session_state.key = sessionKey;
+				user.sessionKeys.push(sessionKey);
+				user.save((err) =>{
+					console.log("User: " + user.username + " has logged in on IP: " + ip);
+					res.json({redirect:"/session"});
+				});
 			}
 			else
 			{
@@ -501,18 +577,8 @@ function verificationExists(username) {
 	return false;
 }
 
-function userExistsFromIP(req) {
-	let ip = getIP(req);
-	for(let i=0;i<loggers.length;i++)
-		if(loggers[i][1] === ip)
-			return true;
-}
-
-function userHasPermission(username, permissionLevel){
-	users.findOne({username:username}, (err, user) => {
-		if(err) throw err;
-		return user.permission === permissionLevel;
-	});
+function userHasPermission(userPermission, permissionLevel){ /// will update for actual permission levels, not so that they are exactly the same
+	return userPermission === permissionLevel;
 }
 
 function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
@@ -541,7 +607,52 @@ function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
 	});
 }
 
+function arraysAreEqual(value, other) {
+	var type = Object.prototype.toString.call(value);
 
+	if (type !== Object.prototype.toString.call(other)) return false;
+
+	if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false;
+
+	var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
+	var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+	if (valueLen !== otherLen) return false;
+
+	var compare = function (item1, item2) {
+
+		var itemType = Object.prototype.toString.call(item1);
+
+		if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+			if (!isEqual(item1, item2)) return false;
+		}
+
+		else {
+
+			if (itemType !== Object.prototype.toString.call(item2)) return false;
+
+			if (itemType === '[object Function]') {
+				if (item1.toString() !== item2.toString()) return false;
+			} else {
+				if (item1 !== item2) return false;
+			}
+
+		}
+	};
+
+	if (type === '[object Array]') {
+		for (var i = 0; i < valueLen; i++) {
+			if (compare(value[i], other[i]) === false) return false;
+		}
+	} else {
+		for (var key in value) {
+			if (value.hasOwnProperty(key)) {
+				if (compare(value[key], other[key]) === false) return false;
+			}
+		}
+	}
+
+	return true;
+}
 ////////////////////////END OF FUNCTIONS///////////////////////////////////////////////////////
 
 
