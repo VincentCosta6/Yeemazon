@@ -14,6 +14,10 @@ let userSchema = mongoose.Schema({
 		type: String,
 		require: true
 	},
+	permission:{
+		type: String,
+		require:true
+	},
 	IPs: [{
 		type: String,
 		require: true

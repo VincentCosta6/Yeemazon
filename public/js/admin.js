@@ -15,9 +15,9 @@ $(document).ready(function(){
 		if ($("#name").val() && $("#id").val() === "Item ID" && $("#desc").val() && $("#price").val() &&
 		$("#name").val()!=="Item Name" && $("#desc").val()!=="Item Description") {
         	//TODO -- add /addItem to routes
-			$.post("/addItem", {name:$("#name").val(),_id:$("#id").val(),price:$("#price").val(),description:$("#desc").val(), keywords : $("#key").val().split(" "),
-			pic:$("#pic").prop('files')[0]}
-			,function(data){if(data.error)alert("ERROR: Item not added, please try again"); else alert("Item successfully added")});
+			$.post("/addItem", {name:$("#name").val(),_id:$("#id").val(),price:$("#price").val(),description:$("#desc").val(), keywords : $("#key").val().split(" ")
+			}
+			,itemCall);
 		} else {
 			alert("Form filled out incorrectly, please check your data");
 		}
@@ -30,7 +30,7 @@ $(document).ready(function(){
         $("#price").val()!=="Item Price" && $("key").val() !== "Key Words" && $("#key").val()) {
 			//TODO -- add /addItem to routes
 			$.post("/changeItem", {name:$("#name").val(),_id:$("#id").val(),price:$("#price").val(),link:"images/",description:$("#desc").val(), keywords : $("#key").val().split(" ")},
-			function(data){if(data.error)alert("ERROR: Item not changed, please check data and try again"); else alert(data.status)});
+			itemCall);
 		} else {
 			alert("Form filled out incorrectly, please check your data");
 		}
@@ -40,9 +40,9 @@ $(document).ready(function(){
 	$("#remove").click(() => {
 		if($("#id").val() && $("#id").val()!=="Item ID")
 			$.post("/deleteItem", {_id:$("#id").val()},
-			function(data){if(data.error)alert("ERROR: Item not removed, please check ID try again"); else alert("Item successfully removed")});
+			itemCall);
 		else
-			alert("ID not inputted correctly, please check your data");
+			alert("ID not input correctly, please check your data");
 	});
 
 	$(".loginInput").focus( function() {
@@ -59,8 +59,12 @@ $(document).ready(function(){
 				if($(blurIDs[i]).val()=="")
 					$(blurIDs[i]).val(defaultText[i]);
 			});
-			
+
 });
+function itemCall(data)
+{
+	alert(data.reason);
+}
 var username, password;
 function success(data)
 {

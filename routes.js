@@ -210,6 +210,7 @@ router.post("/signup", function(req, res){
 			username : req.body.username,
 			email : req.body.email,
 			password : hashed,
+			permission : "user",
 			IPs : [ip],
 			Cart : [],
 			orders : [],
@@ -238,16 +239,13 @@ router.post("/addItem", function(req, res) {
 		if(err) throw err;
 
 		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-		if(!check.passed)	return res.json(check.reason);
-
-		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/" + req.files.pic.name, keywords : req.body.keywords, creator : user.username, usersClicked : []
+		if(!check.passed)	return res.json({passed:false,reason:check.reason});
+		console.log(check.passed);
+		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords, creator : user.username, usersClicked : []
 
 		};
-		req.files.pic.mv("./public/images/" + req.body.pic.name, (err) => {
-			if(err) throw err;
-			db.collection('products').insert(newItem);
-			return res.json({status:"Success"});
-		});
+		db.collection('products').insert(newItem);
+		return res.json({passed:true, reason:"Success"});
 
 	});
 
@@ -385,14 +383,15 @@ router.get("/updateSchema", function(req, res) {
 	users.find({}, (err, users) => {
 		for(let i in users)
 		{
-			if(!users[i].sessionKeys)
+			if(!users[i].permission)
 			{
-				users[i].sessionKeys = [];
+				users[i].permission = (users[i].username === "admin") ? "admin" : "user";
+
+				users[i].save((err) => {
+					if(err) console.log(err);
+					else console.log("User updated: " + users[i]._id);
+				});
 			}
-			users[i].save((err) => {
-				if(err) console.log(err);
-				else console.log("User updated: " + users[i]._id);
-			})
 		}
 
 	});
@@ -408,7 +407,7 @@ let devKeys = [];
 
 
 function permissionAndXSSCheck(user, permissionLevel, arrayCheck) {
-	if(userHasPermission(user.permission, permissionLevel)) return {passed : false, reason : "Permission not high enough"};
+	if(user.permission !== permissionLevel) return {passed : false, reason : "Permission not high enough"};
 
 	if(arrayContainsXSSInjection(arrayCheck)) return {passed : false, reason : "Parameters contain XSS Injection Possibility"};
 
