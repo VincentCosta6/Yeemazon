@@ -3,13 +3,14 @@ $(document).ready(function(){
 	$.get("/userInfo", success);
 
 	var id = retID(window.location.href);
-	$.get("/itemInfo", {id:id},(data) => {
-		$("#name").html(data[0].name + " \"ID: " + data[0]._id + "\"");
-		$(document).prop('title', 'Yeemazon - ' + data[0].name);
-		$("#itemPrice").html("$" + data[0].price);
-		$("#itemDesc").html(data[0].description + "<br><br><br>Clicks: " + data[0].clicks + "<br>UniqueClicks: " + data[0].usersClicked.length + "<br>Ordered: " + data[0].numOrders);
-		$("#holder").css("background-image", "url(" + data[0].link + ")");
-		id = data[0]._id;
+	$.get("/getItemInfo", {_id:id}, (data) => {
+		data.item = data.item[0];
+		$("#name").html(data.item.name + " \"ID: " + data.item._id + "\"");
+		$(document).prop('title', 'Yeemazon - ' + data.item.name);
+		$("#itemPrice").html("$" + data.item.price);
+		$("#itemDesc").html(data.item.description + "<br><br><br>Clicks: " + data.item.clicks + "<br>UniqueClicks: " + data.item.usersClicked.length + "<br>Ordered: " + data.item.numOrders);
+		$("#holder").css("background-image", "url(" + data.item.link + ")");
+		id = data.item._id;
 	});
 
 	$("#logout").click(() => {

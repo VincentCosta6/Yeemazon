@@ -88,10 +88,10 @@ router.get("/itemInfo", function(req, res){
 });
 
 router.get("/findItem", function(req, res){
-	if(!req.query.name || req.query.name !== "")
-	products.findOne({name:req.query.name},function(err,products){
+	if(!req.query._id || req.query._id !== "")
+	products.findOne({_id:req.query._id},function(err,product){
 		if (err) throw err;
-		return res.json({item:products});
+		return res.json({item:product});
 	});
 });
 
@@ -105,15 +105,15 @@ router.get("/findItems", function(req, res){
 
 router.get("/getItemInfo", function(req, res){
 
-	products.find({_id:req.query.itemID},function(err,products){
+	products.find({_id:req.query._id},function(err,product){
 		if(err) throw err;
-		return res.json({item:products});
+		return res.json({item:product});
 	});
 });
 
 
 router.get("/userInfo",function(req,res){
-	if(!req.session_state || req.session_state.active === false || !req.session_state.key) {
+	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user) {
 		req.session_state.reset();
 		console.log("Resetting session");
 		return res.json({redirect:"/"});
