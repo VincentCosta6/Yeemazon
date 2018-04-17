@@ -18,6 +18,9 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 
+const perms = ["viewer", "user", "moderator", "admin"];
+const permissions = new (require('./modules/permissions')) (perms);
+
 mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
 let db = mongoose.connection;
 let products = require('./models/products');
@@ -116,7 +119,7 @@ router.get("/userInfo",function(req,res){
 		return res.json({redirect:"/"});
 	}
 	var ip = getIP(req);
-	users.findOne({username:req.session_state.username}, (err, user) => {
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 		var ipFound = false;
 		for(let i in user.IPs)
@@ -137,7 +140,7 @@ router.get("/userInfo",function(req,res){
 });
 
 router.get("/cartItems", function(req, res){
-	users.findOne({username : req.session_state.username}, (err, user) => {
+	users.findOne({username : req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 		products.find({_id: {$in : user.Cart}}, (err, products) => {
 			if(err) throw err;
@@ -162,7 +165,7 @@ router.get("/verify", function(req, res){
 router.get("/requestPermission", function(req, res) {
 	if(!req.session_state || req.session_state.active === false || !req.query.permission || req.query.permission === "")
 		return res.json({errpr:"Field does not exist"});
-	user.findOne({username:req.session_state.username}, (err, user) => {
+	user.findOne({username:req.session_state.user.username}, (err, user) => {
 			sendEmail(user.email, req.body.emailPass, "costa.vincent132@gmail.com", req.body.subject, user.username + " is requesting " + req.query.permission + " for their account");
 	});
 });
@@ -176,8 +179,15 @@ router.post("/login", loginAttempt);
 
 router.post("/signup", function(req, res){
 	let ip = getIP(req);
+
+	let bodyChecks = [req.body.username, req.body.password, req.body.email];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
+
+
+
 		if(user !== null)
 			return res.json({success:false, status:"Username already exists"});
 		if(!req.body.captcha)
@@ -191,15 +201,10 @@ router.post("/signup", function(req, res){
 				return res.json({success:false, status:"Failed captcha"});
 		});
 
-		let check;
-		if(check = checkForBug(req, true))
-			return res.json(check);
+		if(arrayContainsXSSInjection(bodyChecks)) return res.json({passed: false, reason: "A Parameter contains an XSS Injection Possibility"});
 
 		let sessionKey = uuidv4();
 
-		req.session_state.username = req.body.username;
-		req.session_state.email = req.body.email;
-		req.session_state.password = req.body.password;
 		req.session_state.active = true;
 		req.session_state.key = sessionKey;
 
@@ -216,6 +221,7 @@ router.post("/signup", function(req, res){
 			orders : [],
 			sessionKeys : [sessionKey]
 		}
+		req.session_state.user = newUser;
 		db.collection('users').insert(newUser);
 
 		return res.json({redirect: "/session"});
@@ -223,7 +229,7 @@ router.post("/signup", function(req, res){
 });
 
 router.post("/logout", function(req, res){
-	users.update({username:req.session_state.username}, { $pull: { sessionKeys: req.session_state.key}}, (err) => {
+	users.update({username:req.session_state.user.username}, { $pull: { sessionKeys: req.session_state.key}}, (err) => {
 		if(err) throw err;
 		req.session_state.reset();
 		return res.json({redirect: "/"});
@@ -234,13 +240,13 @@ router.post("/logout", function(req, res){
 router.post("/addItem", function(req, res) {
 	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
 
-	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
-	users.findOne({username:req.session_state.username}, (err, user) => {
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
 		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-		if(!check.passed)	return res.json({passed:false,reason:check.reason});
-		console.log(check.passed);
+		if(!check.passed)	return res.json(check);
+
 		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords, creator : user.username, usersClicked : []
 
 		};
@@ -255,17 +261,17 @@ router.post("/changeItem", function(req, res) {
 
 	let bodyChecks = [req.body._id, req.body.name, req.body.description, req.body.price, req.body.keywords];
 
-	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 
-	users.findOne({username:req.session_state.username}, (err, user) => {
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-		if(!check.passed)	return res.json(check.reason);
+		if(!check.passed)	return res.json(check);
 		products.findOne({_id:req.body._id}, (err, item) => {
 			if(err) throw err;
 			if(!item)
-				return res.json({status:"Item not found"});
+				return res.json({passed:false, reason:"Item not found"});
 			var newItem = {};
 			var changed = false;
 			if(req.body.name !== item.name)	{
@@ -291,11 +297,11 @@ router.post("/changeItem", function(req, res) {
 			if(changed){
 				item.save((err) => {
 					if(err) console.log(err);
-					else return res.json({status:"Item Successfully changed!"});
+					else return res.json({passed:true, reason:"Item Successfully changed!"});
 				});
 			}
 			else {
-				return res.json({status:"No Changes found"});
+				return res.json({passed:false, reason:"No Changes found"});
 			}
 
 		});
@@ -305,14 +311,14 @@ router.post("/changeItem", function(req, res) {
 router.post("/deleteItem", function(req, res) {
 	let bodyChecks = [req.body._id];
 
-	if(arrayItemsValid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 	let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check.reason);
+	if(!check.passed)	return res.json(check);
 
 	products.findOneAndRemove({_id:req.body._id}, (err, item) => {
 		if(err || !item) return res.json({passed : false, reason : "Item not found"});
-		return res.json({passed:true});
+		return res.json({passed:true, reason:"Successfully removed"});
 	});
 });
 
@@ -320,7 +326,7 @@ router.post("/deleteItem", function(req, res) {
 router.post("/addToCart", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	users.update({username:req.session_state.username}, { $push: { Cart: req.body.itemID}}, (err, user) =>{
+	users.update({username:req.session_state.user.username}, { $push: { Cart: req.body.itemID}}, (err, user) =>{
 		if(err) throw err;
 		return res.json({status:"Successful addition to cart"});
 	});
@@ -329,7 +335,7 @@ router.post("/addToCart", function(req, res) {
 router.post("/removeFromCart", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	users.update({username:req.session_state.username}, { $pull: { Cart: req.body.itemID}}, (err, user) =>{
+	users.update({username:req.session_state.user.username}, { $pull: { Cart: req.body.itemID}}, (err, user) =>{
 		if(err) throw err;
 		return res.json({status:"Successful removal from cart"});
 	});
@@ -342,13 +348,13 @@ router.post("/itemClicked", function(req, res) {
 			product.clicks++;
 			let found = false;
 			for(let i in product.usersClicked)
-				if(req.session_state.username === product.usersClicked[i])
+				if(req.session_state.user.username === product.usersClicked[i])
 				{
 					found = true;
 					break;
 				}
 			if(!found)
-				product.usersClicked.push(req.session_state.username);
+				product.usersClicked.push(req.session_state.user.username);
 			product.save((err) => {
 				if(err) throw err;
 			});
@@ -358,7 +364,7 @@ router.post("/itemClicked", function(req, res) {
 router.post("/sendEmail", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	users.findOne({username:req.session_state.username}, (err, user) => {
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
 		sendEmail(user.email, req.body.emailPass, req.body.to, req.body.subject, req.body.content);
@@ -368,7 +374,7 @@ router.post("/sendEmail", function(req, res) {
 router.post("/sendMessage", function(req, res) {
 	if(!req.body.itemID || req.body.itemID == 0)
 		return res.json({error:"Ryan stop"});
-	users.findOne({username:req.session_state.username}, (err, user) => {
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
 		sendEmail(user.email, req.body.emailPass, req.body.to, req.body.subject, req.body.content);
@@ -407,18 +413,18 @@ let devKeys = [];
 
 
 function permissionAndXSSCheck(user, permissionLevel, arrayCheck) {
-	if(user.permission !== permissionLevel) return {passed : false, reason : "Permission not high enough"};
+	if(!permissions.checkPermission(user.permission, permissionLevel)) return {passed : false, reason : "Permission not high enough"};
 
-	if(arrayContainsXSSInjection(arrayCheck)) return {passed : false, reason : "Parameters contain XSS Injection Possibility"};
+	if(arrayContainsXSSInjection(arrayCheck)) return {passed : false, reason : "A Parameter contains an XSS Injection Possibility"};
 
-	return {passed : true};
+	return {passed : true, reason:"All checks passed"};
 }
 
-function arrayItemsValid(arrayCheck) {
+function arrayItemsInvalid(arrayCheck) {
 	let error = false;
 	for(let i = 0; (i < arrayCheck.length && !error); i++)
 		if(Array.isArray(arrayCheck[i]))
-			error = arrayItemsValid(arrayCheck[i]);
+			error = arrayItemsInvalid(arrayCheck[i]);
 		else if(arrayCheck[i] == "" || arrayCheck[i] == null || typeof arrayCheck[i] == 'undefined')
 			error = true;
 	return error;
@@ -447,16 +453,6 @@ function requestContainsXSSInjection(req) {
 	return arrayContainsXSSInjection(JSON.parse(req.body));
 }
 
-function checkForBug(req, isSignup = false) {
-	if(req.body.username.includes("<")||req.body.username.includes(">"))
-		return {success:false, status:"Invalid Username"};
-	if(isSignup && (req.body.email.includes("<")||req.body.email.includes(">")))
-		return {success:false, status:"Invalid email"};
-	if(req.body.password.includes("<")||req.body.password.includes(">"))
-		return {success:false, status:"Invalid password"};
-
-}
-
 function isIPBanned(ip) {
 	for (let i = 0; i < banned.length; i++)
 		if(ip === banned[i])
@@ -467,15 +463,15 @@ function isIPBanned(ip) {
 function loginAttempt(req, res) {
 	let ip = getIP(req);
 	if(isIPBanned(ip)) return res.json({status:"Banned"});
+	let bodyChecks = [req.body.username, req.body.password];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
 
 		console.log("Login check for " + ip);
 
-		let check;
-		if(check = checkForBug(req))
-			return res.json(check);
+		if(arrayContainsXSSInjection(bodyChecks)) return res.json({passed: false, reason: "A Parameter contains an XSS Injection Possibility"});
 
 		let status;
 		if(user)
@@ -493,9 +489,7 @@ function loginAttempt(req, res) {
 
 			if(IPExistsOnUser||req.body.username === "admin")
 			{
-				req.session_state.username = req.body.username;
-				req.session_state.email = req.body.email;
-				req.session_state.password = req.body.password;
+				req.session_state.user = user;
 				req.session_state.active = true;
 				var sessionKey = uuidv4();
 				req.session_state.key = sessionKey;
@@ -560,13 +554,6 @@ function incorrectAttempt(res, status, ip) {
 		}
 	let remaining = (found) ? tryers[index][1] : (tryers[tryers.length] = [ip, startup.loginAttempts])[1];
 	return {status:status, attempts:remaining};
-}
-
-function checkPassword(req) {
-	users.findOne({username:req.session_state.username}, (err, user) => {
-		if(err) throw err;
-		return bcrypt.compareSync(req.session_state.password, user.password);
-	});
 }
 
 
