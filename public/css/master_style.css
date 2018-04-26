@@ -1,27 +1,25 @@
 body {background-image: url('background.gif');background-repeat: no-repeat;height:100%;width:100%}
 label {font-family:"tahoma";color:#DDD;font-weight:bold;text-shadow: 3px 3px 6px #000;transition: .3s;}
 label:hover {color:#FFF;font-weight:bold;text-shadow: 3px 3px 6px #DDD}
-h1 {font-family:"tahoma";color:#DDD;transition: .3s}
-h2 {font-family:"tahoma";color:#DDD;transition: .3s}
-h3 {font-family:"tahoma";color:#DDD;transition: .3s}
+h1, h2, h3 {font-family:"tahoma";color:#DDD;transition: .3s}
 
 /*SPECIFIC LOGIN ELEMENTS STYLE*/
 
-.request {font-weight:bold;border:0;text-align: center;overflow:hidden;transition: .3s;background-color: #DDD;text-decoration: none;overflow: hidden;border-radius:4px}
-.request:active:after {padding: 0;margin: 0;opacity: 1;}
-.request:hover{background:#FFF;box-shadow:0px 0px 10px 5px #97B1BF;color:#000;}
-.request:after {content: "";background: #F1C40F;display: block;position: absolute;margin-left: -20px;opacity: 0;}
+.request, .back {font-weight:bold;border:0;text-align: center;overflow:hidden;transition: .3s;background-color: #DDD;text-decoration: none;overflow: hidden;border-radius:4px}
+.request:active:after, .back:active:after {padding: 0;margin: 0;opacity: 1;}
+.request:hover, .back:hover {background:#FFF;box-shadow:0px 0px 10px 5px #97B1BF;color:#000;}
+.request:after, .back:after {content: "";background: #F1C40F;display: block;position: absolute;margin-left: -20px;opacity: 0;}
 
 .loginInput {width: 300px;height: 50px;text-align:center;font-size:24px;background-color:#DDD;font-weight:bold;}
 
-#loginBox {text-align:center;margin:0 auto;background: rgba(30,30,30, 0.7);width:350px;border-radius:10px;position: relative;animation: flyInFromTop 2s 1 ease;}
+#loginBox {text-align:center;margin:0 auto;background: rgba(30,30,30, 0.7);width:350px;border-radius:10px;position: relative;animation: flyInFromTop 1s 1 ease;padding-bottom:10px;}
 
 .loginHeader {text-align:center;margin:0 auto;text-shadow: 5px 5px 10px #000;position: relative;animation: flyInFromTop 2s 1 ease;}
 .loginHeader:hover {text-shadow: 10px 10px 20px #000}
 
 /*SESSION HOME PAGE SPECIFIC ELEMENTS STYLE*/
 
-.toolbarButton {background-color: Transparent;background-repeat:no-repeat;border: none;cursor:pointer;overflow: hidden;outline:none;font-family:"tahoma";color:#DDDDDD;font-weight:bold;text-shadow: 3px 3px 6px #000000;transition: .3s;margin-right:10px}
+.toolbarButton {background-color: transparent;background-repeat:no-repeat;border: none;cursor:pointer;overflow: hidden;outline:none;font-family:"tahoma";color:#DDDDDD;font-weight:bold;text-shadow: 3px 3px 6px #000000;transition: .3s;margin-right:10px}
 .toolbarButton:hover {color:#FFF;font-weight:bold;text-shadow: 3px 3px 6px #DDD}
 
 #userGreeting {text-align:left;margin:0 auto;text-shadow:5px 5px 10px #000;color:#DDD;transition: .3s;position: relative;animation: flyInFromBottom 2s 1 ease;}

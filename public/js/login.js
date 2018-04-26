@@ -17,7 +17,17 @@ function redirect(data)
 }
 function sendSignup()
 {
-	window.location = window.location.href.split("/")[1] + "/signup";
+	//Unholy line of code, try to ignore it
+	newDiv = "<div id=\"loginBox\" class=\"2\"><br><label>Choose a username</label><div style=\"margin-top: 10px\"></div><input id=\"username\" type=\"text\" class=\"loginInput\"><div style=\"margin-top: 30px\"></div><label>Enter your email</label><div style=\"margin-top: 10px\"></div><input id=\"email\" name=\"email\" type=\"text\" class=\"loginInput\"><div style=\"margin-top: 30px\"></div><label>Choose a password (hidden)</label><div style=\"margin-top: 10px\"></div><input id=\"password\" type=\"password\" class=\"loginInput\"><div style=\"margin-top: 40px\"></div><div align = \"center\" class=\"g-recaptcha\" data-sitekey=\"6LfhUk4UAAAAACFLoT8YhRJxxtEJuamEWGQXNhfb\"></div><div style=\"margin-top: 30px\"></div><button id=\"request\" class=\"request\">Sign up!</button><div style=\"margin-top: 10px\"><button id=\"back\" class=\"back\">Go Back</button></div>";
+	$(".1").replaceWith(newDiv);
+	$("#back").click(sendBack);
+}
+function sendBack()
+{
+	//Unholy line of code, try to ignore it
+	newDiv = "<div id=\"loginBox\" class=\"1\"><br><label>Username</label><div style=\"margin-top: 10px\"></div><input id=\"username\" type=\"text\" class=\"loginInput\"><div style=\"margin-top: 30px\"></div><label>Password</label><div style=\"margin-top: 10px\"></div><input id=\"password\" type=\"password\" class=\"loginInput\"><div style=\"margin-top: 25px\"></div><button id=\"request\" class=\"request\">Log In</button><div style=\"margin-top: 20px\"></div><label>Don't have an account?</label><button id=\"signup\" class=\"request\">Sign up!</button><div style=\"margin-top: 10px\"></div></div>";
+	$(".2").replaceWith(newDiv);
+	$("#signup").click(sendSignup);
 }
 $(document).ready(function(){
 	$.get("/userInfo", success);
