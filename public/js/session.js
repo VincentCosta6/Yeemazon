@@ -14,6 +14,7 @@ $(document).ready(function() {
     var newDiv = "<div id=\"ordersPageback\"><h2 class=\"itemLabel\" style=\"padding-top:30px;\">Your Cart ({NUMBER} Items)</h2><div style=\"margin-top: 10px\"></div><div class=\"orderHolder\"></div></div>";
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
+    $("#itemPageback").replaceWith(newDiv);
 
     $.get("/cartItems", function(data) {
       for (var i = 0; i < data.items.length; i++) {
@@ -22,8 +23,36 @@ $(document).ready(function() {
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
         $(".orderHolder").append(divCreator);
         var redirect = function() {
-          //TODO - INDIVIDUAL ITEM PAGE CODE
-          window.location = window.location.href.split("/")[1] + "/item?id=" + id
+          //INDIVIDUAL ITEM PAGE CODE
+          var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
+          $("#ordersPageback").replaceWith(newDiv);
+          $("#sessionPageback").replaceWith(newDiv);
+
+          $.get("/getItemInfo", {
+            _id: id
+          }, (data) => {
+            data.item = data.item[0];
+            $("#name").html("Yeemazon™ Official " + data.item.name);
+            $(document).prop('title', 'Yeemazon - ' + data.item.name);
+            $("#itemPrice").html("$" + data.item.price);
+            $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+            $("#itemDesc").html(data.item.description);
+            $("#itemClick").html("Clicks: " + data.item.clicks);
+            $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+            $("#itemOrders").html("Ordered: " + data.item.numOrders);
+            $("#itemID").html("Item ID: " + data.item._id);
+            $("#holder").css("background-image", "url(" + data.item.link + ")");
+            id = data.item._id;
+          });
+
+          $("#addToCart").click(() => {
+            $.post("/addToCart", {
+              itemID: id
+            }, (data) => {
+              alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+            });
+          });
+          //window.location = window.location.href.split("/")[1] + "/item?id=" + id
         };
         var remover = function() {
           $.post("/removeFromCart", {
@@ -54,6 +83,7 @@ $(document).ready(function() {
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
     $("#ordersPageback").replaceWith(newDiv);
+    $("#itemPageback").replaceWith(newDiv);
     //populate homepage
     //grab first 6 "popular items", "under20", and "yee"
     let searcher = ["popular", "under20", "yee"];
@@ -86,8 +116,35 @@ $(document).ready(function() {
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
         $(".searchHolder").append(divCreator);
         $("#" + id).click(function() {
-          //TODO - INDIVIDUAL ITEM PAGE CODE
-          window.location = window.location.href.split("/")[1] + "/item?id=" + id
+          //INDIVIDUAL ITEM PAGE CODE
+          var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
+          $("#sessionPageback").replaceWith(newDiv);
+
+          $.get("/getItemInfo", {
+            _id: id
+          }, (data) => {
+            data.item = data.item[0];
+            $("#name").html("Yeemazon™ Official " + data.item.name);
+            $(document).prop('title', 'Yeemazon - ' + data.item.name);
+            $("#itemPrice").html("$" + data.item.price);
+            $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+            $("#itemDesc").html(data.item.description);
+            $("#itemClick").html("Clicks: " + data.item.clicks);
+            $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+            $("#itemOrders").html("Ordered: " + data.item.numOrders);
+            $("#itemID").html("Item ID: " + data.item._id);
+            $("#holder").css("background-image", "url(" + data.item.link + ")");
+            id = data.item._id;
+          });
+
+          $("#addToCart").click(() => {
+            $.post("/addToCart", {
+              itemID: id
+            }, (data) => {
+              alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+            });
+          });
+          //window.location = window.location.href.split("/")[1] + "/item?id=" + id
         });
 
         $(".searchHolder").css("height", 230 * (Math.floor((data.items.length / 6)) + 1));
@@ -142,13 +199,46 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
   var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + name + "</label><br><label>$" + price + "</label></div>";
   $("#items" + which).append(divCreator);
   $("#" + id).click(function() {
+
+    console.log("BEGIN");
+
     $.post("/itemClicked", {
       itemID: id
     }, (data) => {
       console.log("Clicked")
     });
-    //TODO - INDIVIDUAL ITEM PAGE CODE
-    window.location = window.location.href.split("/")[1] + "/item?id=" + id;
+
+    //INDIVIDUAL ITEM PAGE CODE
+    var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
+    $("#sessionPageback").replaceWith(newDiv);
+
+    $.get("/getItemInfo", {
+      _id: id
+    }, (data) => {
+      data.item = data.item[0];
+      $("#name").html("Yeemazon™ Official " + data.item.name);
+      $(document).prop('title', 'Yeemazon - ' + data.item.name);
+      $("#itemPrice").html("$" + data.item.price);
+      $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+      $("#itemDesc").html(data.item.description);
+      $("#itemClick").html("Clicks: " + data.item.clicks);
+      $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+      $("#itemOrders").html("Ordered: " + data.item.numOrders);
+      $("#itemID").html("Item ID: " + data.item._id);
+      $("#holder").css("background-image", "url(" + data.item.link + ")");
+      id = data.item._id;
+    });
+
+    $("#addToCart").click(() => {
+      $.post("/addToCart", {
+        itemID: id
+      }, (data) => {
+        alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+      });
+    });
+
+
+    //window.location = window.location.href.split("/")[1] + "/item?id=" + id;
   });
 }
 var username, password;
