@@ -246,6 +246,17 @@ h1, h2, h3 {
   animation: flyInFromBottom 1s 1 ease;
 }
 
+#itemPageback {
+  margin: 0 auto;
+  background: rgba(30, 30, 30, 0.7);
+  width: 60%;
+  height: 500px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
 .orderHolder {
   width: 100%;
   height: 400px;

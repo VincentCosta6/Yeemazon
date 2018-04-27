@@ -22,6 +22,7 @@ $(document).ready(function() {
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
         $(".orderHolder").append(divCreator);
         var redirect = function() {
+          //TODO - INDIVIDUAL ITEM PAGE CODE
           window.location = window.location.href.split("/")[1] + "/item?id=" + id
         };
         var remover = function() {
@@ -85,6 +86,7 @@ $(document).ready(function() {
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
         $(".searchHolder").append(divCreator);
         $("#" + id).click(function() {
+          //TODO - INDIVIDUAL ITEM PAGE CODE
           window.location = window.location.href.split("/")[1] + "/item?id=" + id
         });
 
@@ -145,6 +147,7 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
     }, (data) => {
       console.log("Clicked")
     });
+    //TODO - INDIVIDUAL ITEM PAGE CODE
     window.location = window.location.href.split("/")[1] + "/item?id=" + id;
   });
 }
