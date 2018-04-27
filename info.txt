@@ -1,3 +1,9 @@
+mongo ds135399.mlab.com:35399/yemazon -u admin -p admin123
+
+MLAB CREDENTIALS
+user: rcbriansanchez@gmail.com
+pass: Yeemazon123
+
 Site Key: 6LfhUk4UAAAAACFLoT8YhRJxxtEJuamEWGQXNhfb
 Secret-Key: 6LfhUk4UAAAAAEf3g2FRVkhLt75ikTv66-iufaMW
 
