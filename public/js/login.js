@@ -29,21 +29,21 @@ function sendBack()
 	newDiv = "<div id=\"loginBox\" class=\"1\"><br><label>Username</label><div style=\"margin-top: 10px\"></div><input id=\"username\" type=\"text\" class=\"loginInput\"><div style=\"margin-top: 30px\"></div><label>Password</label><div style=\"margin-top: 10px\"></div><input id=\"password\" type=\"password\" class=\"loginInput\"><div style=\"margin-top: 25px\"></div><button id=\"request\" class=\"request\">Log In</button><div style=\"margin-top: 20px\"></div><label>Don't have an account?</label><button id=\"signup\" class=\"request\">Sign up!</button><div style=\"margin-top: 10px\"></div></div>";
 	$(".2").replaceWith(newDiv);
 	$("#signup").click(sendSignup);
-   $("#request").click(sendLogin);
+  $("#request").click(sendLogin);
 }
 $(document).ready(function(){
 	$.get("/userInfo", success);
 	$("#signup").click(sendSignup);
-
-   function submitForm(e) {
-	   e.preventDefault();
-   }
-
-	$('.loginInput').keypress(function(e){
-      if(e.keyCode==13)
-      $('#request').click();
-    });
+	$(document).keypress(function(e){
+			if(e.keyCode==13)
+			$('#request').click();
+	});
+	$("#request").click(sendLogin);
 });
+
+function submitForm(e) {
+	 e.preventDefault();
+}
 function success(data)
 {
 	if(!data.redirect)
@@ -60,4 +60,3 @@ function signup()
             dataType : "json"
         });
 }
-
