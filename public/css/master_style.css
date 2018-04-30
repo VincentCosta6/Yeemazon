@@ -23,6 +23,10 @@ h1, h2, h3 {
   transition: .3s
 }
 
+h3 {
+  cursor: default;
+}
+
 /*SPECIFIC LOGIN ELEMENTS STYLE*/
 
 .request, .back {
@@ -58,6 +62,15 @@ h1, h2, h3 {
   opacity: 0;
 }
 
+.adminInput {
+  width: 200px;
+  height: 30px;
+  text-align: center;
+  font-size: 14px;
+  background-color: #DDD;
+  font-weight: bold;
+}
+
 .loginInput {
   width: 300px;
   height: 50px;
@@ -83,10 +96,27 @@ h1, h2, h3 {
   margin: 0 auto;
   text-shadow: 5px 5px 10px #000;
   position: relative;
+  cursor: pointer;
   animation: flyInFromTop 2s 1 ease;
 }
 
+#boxLabel {
+  cursor: pointer;
+}
+
 .loginHeader:hover {
+  text-shadow: 10px 10px 20px #000
+}
+
+.loginExtra {
+  text-align: center;
+  margin: 0 auto;
+  text-shadow: 5px 5px 10px #000;
+  position: relative;
+  animation: flyInFromTop 2s 1 ease;
+}
+
+.loginExtra:hover {
   text-shadow: 10px 10px 20px #000
 }
 
@@ -120,6 +150,7 @@ h1, h2, h3 {
   color: #DDD;
   transition: .3s;
   position: relative;
+  cursor: default;
   animation: flyInFromBottom 1s 1 ease;
 }
 
@@ -197,6 +228,7 @@ h1, h2, h3 {
   text-shadow: 5px 5px 10px #000;
   margin-left: .8%;
   position: relative;
+  cursor: default;
   animation: flyInFromBottom 1s 1 ease;
 }
 
@@ -378,7 +410,7 @@ h1, h2, h3 {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.9);
   width: 380px;
-  height: 590px;
+  height: 430px;
   border-radius: 10px;
   position: relative;
   animation: flyInFromTop 1s 1 ease;

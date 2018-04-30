@@ -11,7 +11,7 @@ $(document).ready(function() {
 
   //CART CODE
   $("#cart").click(() => {
-    var newDiv = "<div id=\"ordersPageback\"><h2 class=\"itemLabel\" style=\"padding-top:30px;\">Your Cart ({NUMBER} Items)</h2><div style=\"margin-top: 10px\"></div><div class=\"orderHolder\"></div></div>";
+    var newDiv = "<div id=\"ordersPageback\"><h2 class=\"itemLabel\" id=\"cartNumber\"style=\"padding-top:30px;\">Your Cart ({NUMBER} Items)</h2><div style=\"margin-top: 10px\"></div><div class=\"orderHolder\"></div></div>";
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
     $("#itemPageback").replaceWith(newDiv);
@@ -20,7 +20,7 @@ $(document).ready(function() {
       for (var i = 0; i < data.items.length; i++) {
 
         let id = data.items[i]._id;
-        var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
+        var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label class=\"remove\" id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
         $(".orderHolder").append(divCreator);
         var redirect = function() {
           //INDIVIDUAL ITEM PAGE CODE
@@ -59,6 +59,7 @@ $(document).ready(function() {
             itemID: id
           }, (data) => {
             $("#" + id).remove();
+            $("#cartNumber").html("Your Cart (" + data.items.length + " Items)");
             alert("Successful removal");
           })
         };
@@ -104,6 +105,9 @@ $(document).ready(function() {
       var newDiv = "<div id=\"searchBack\"><h2 class=\"itemLabel\" style=\"padding-top:30px\">Search Results for {QUERY}</h2><div style=\"margin-top: 10px\"></div><div class=\"searchHolder\"></div><h3>End of Search Results</h3>  </div>";
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
+    $("#itemPageback").replaceWith(newDiv);
+    $("#ordersPageback").replaceWith(newDiv);
+    $(".itemLabel").html("No search results");
 
     //populate search page
 
@@ -149,6 +153,7 @@ $(document).ready(function() {
 
         $(".searchHolder").css("height", 230 * (Math.floor((data.items.length / 6)) + 1));
         $("#searchBack").css("height", 350 * (Math.floor((data.items.length / 6)) + 1));
+        $(".itemLabel").html("No search results");
         $(".itemLabel").html("Search Results for " + "\"" + $("#search").val() + "\" -- " + data.items.length + " results");
       }
     });
@@ -196,7 +201,7 @@ $(document).keypress(function(e) {
 });
 
 function appender(id, link, name, price, clicks, uniqueClicks, which) {
-  var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + name + "</label><br><label>$" + price + "</label></div>";
+  var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label id=\"boxLabel\">" + name + "</label><br><label id=\"boxLabel\">$" + price + "</label></div>";
   $("#items" + which).append(divCreator);
   $("#" + id).click(function() {
 
