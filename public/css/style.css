@@ -233,6 +233,7 @@ h3 {
   animation: flyInFromBottom 1s 1 ease;
 }
 
+.itemHolder, .itemCont {
   width: 100%;
   height: 230px;
   background-color: rgba(0, 0, 0, 0.5);
