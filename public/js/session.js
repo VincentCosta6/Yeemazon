@@ -80,7 +80,7 @@ $(document).ready(function() {
   //RESET TO BROWSE PAGE / SESSION PAGE
   $(".loginHeader").click(() => {
     //Unholy line of code, sorry
-    var newDiv = "<div id=\"sessionPageback\"><h2 class=\"itemLabel\" style=\"padding-top:30px\">Popular Items</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items1\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Under $20</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items2\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Mr. Yee's Picks</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items3\"></div></div>";
+    var newDiv = "<div id=\"sessionPageback\"><h2 class=\"itemLabel\" style=\"padding-top:30px\">Popular Items</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items1\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Under $20</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items2\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Mr. Yee's Picks</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items3\"></div><div style=\"margin-top: 100px\"></div> <h2 class = \"itemLabel\">All Items</h2> <div style = \"margin-top: 10px\"></div> <div class = \"itemCont\" id=\"items4\"> </div></div > ";
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
     $("#ordersPageback").replaceWith(newDiv);
@@ -97,6 +97,17 @@ $(document).ready(function() {
           if (data.items[i2])
             appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
       });
+
+    $.get("/findItems", {
+      keywords: "cool"
+    }, function(data) {
+      for (let i = 0; i < data.items.length; i++)
+        if (data.items[i])
+      appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
+
+      $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
+      $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
+    });
   });
 
   //SEARCH PAGE
@@ -171,6 +182,18 @@ $(document).ready(function() {
         if (data.items[i2])
           appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
     });
+
+  $.get("/findItems", {
+    keywords: "cool"
+  }, function(data) {
+    for (let i = 0; i < data.items.length; i++)
+      if (data.items[i])
+        appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
+
+    $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
+    $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
+  });
+
 
   if (!($("#search").val()) || $("#search").val() == "Search for an item")
     $('#request').prop('hidden', true);
