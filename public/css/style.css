@@ -1,6 +1,6 @@
 body {
   background-image: url('index.jpg');
-  background-size: cover
+  background-size: cover no-repeat
 }
 
 label {
@@ -195,6 +195,34 @@ h3 {
   justify-content: flex-start;
   position: relative;
   animation: flyInFromBottom 1s 1 ease;
+}
+
+#fakeToolbar {
+  margin: 0 auto;
+  background: rgba(20, 20, 20, 0.9);
+  width: 900px;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  animation: shrink 1s 1 ease;
+}
+
+#anotherFakeToolbar {
+  margin: 0 auto;
+  background: rgba(20, 20, 20, 0.9);
+  width: 95%;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  animation: grow 1s 1 ease;
 }
 
 #toolbarRight {
@@ -459,4 +487,14 @@ h3 {
   to {
     top: 0px;
   }
+}
+
+@keyframes shrink {
+   from {width: 95%;}
+   to {width:900px;}
+}
+
+@keyframes grow {
+   from {width: 900px;}
+   to {width:95%;}
 }

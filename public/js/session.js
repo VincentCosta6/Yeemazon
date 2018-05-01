@@ -1,3 +1,5 @@
+var isOnItemPage = 0;
+
 $(document).ready(function() {
   $.get("/userInfo", success);
   $("#logout").click(() => {
@@ -5,12 +7,17 @@ $(document).ready(function() {
       window.location = window.location.href.split("/")[1] + data.redirect;
     });
   });
+
   $("#account").click(() => {
     window.location = window.location.href.split("/")[1] + "/account";
   });
 
   //CART CODE
   $("#cart").click(() => {
+    if (state) {
+      $("#fakeToolbar").attr("id", "anotherFakeToolbar");
+      state = 0;
+    }
     var newDiv = "<div id=\"ordersPageback\"><h2 class=\"itemLabel\" id=\"cartNumber\"style=\"padding-top:30px;\">Your Cart ({NUMBER} Items)</h2><div style=\"margin-top: 10px\"></div><div class=\"orderHolder\"></div></div>";
     $("#searchBack").replaceWith(newDiv);
     $("#sessionPageback").replaceWith(newDiv);
@@ -24,9 +31,12 @@ $(document).ready(function() {
         $(".orderHolder").append(divCreator);
         var redirect = function() {
           //INDIVIDUAL ITEM PAGE CODE
+          state = 1;
           var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
           $("#ordersPageback").replaceWith(newDiv);
           $("#sessionPageback").replaceWith(newDiv);
+          $("#toolbar").attr("id", "fakeToolbar");
+          $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 
           $.get("/getItemInfo", {
             _id: id
@@ -79,6 +89,10 @@ $(document).ready(function() {
 
   //RESET TO BROWSE PAGE / SESSION PAGE
   $(".loginHeader").click(() => {
+    if (state) {
+      $("#fakeToolbar").attr("id", "anotherFakeToolbar");
+      state = 0;
+    }
     //Unholy line of code, sorry
     var newDiv = "<div id=\"sessionPageback\"><h2 class=\"itemLabel\" style=\"padding-top:30px\">Popular Items</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items1\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Under $20</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items2\"></div><div style=\"margin-top: 30px\"></div><h2 class=\"itemLabel\">Mr. Yee's Picks</h2><div style=\"margin-top: 10px\"></div><div class=\"itemHolder\" id=\"items3\"></div><div style=\"margin-top: 100px\"></div> <h2 class = \"itemLabel\">All Items</h2> <div style = \"margin-top: 10px\"></div> <div class = \"itemCont\" id=\"items4\"> </div></div > ";
     $("#searchBack").replaceWith(newDiv);
@@ -112,6 +126,10 @@ $(document).ready(function() {
 
   //SEARCH PAGE
   $("#request").click(() => {
+    if (state) {
+      $("#fakeToolbar").attr("id", "anotherFakeToolbar");
+      state = 0;
+    }
     if ($("#search").val() && $("#search").val() !== "Search for an item")
       var newDiv = "<div id=\"searchBack\"><h2 class=\"itemLabel\" style=\"padding-top:30px\">Search Results for {QUERY}</h2><div style=\"margin-top: 10px\"></div><div class=\"searchHolder\"></div><h3>End of Search Results</h3>  </div>";
     $("#searchBack").replaceWith(newDiv);
@@ -132,8 +150,11 @@ $(document).ready(function() {
         $(".searchHolder").append(divCreator);
         $("#" + id).click(function() {
           //INDIVIDUAL ITEM PAGE CODE
+          state = 1;
           var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
           $("#sessionPageback").replaceWith(newDiv);
+          $("#toolbar").attr("id", "fakeToolbar");
+          $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 
           $.get("/getItemInfo", {
             _id: id
@@ -237,8 +258,11 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
     });
 
     //INDIVIDUAL ITEM PAGE CODE
+    state = 1;
     var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
     $("#sessionPageback").replaceWith(newDiv);
+    $("#toolbar").attr("id", "fakeToolbar");
+    $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 
     $.get("/getItemInfo", {
       _id: id

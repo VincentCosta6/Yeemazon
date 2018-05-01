@@ -9,7 +9,8 @@ $(document).ready(function() {
     window.location = window.location.href.split("/")[1] + "/session";
   });
   $("#cart").click(() => {
-    window.location = window.location.href.split("/")[1] + "/cart";
+    //gotta redirect this to cart
+    window.location = window.location.href.split("/")[1] + "/session";
   });
 });
 var username, password;
