@@ -1,4 +1,4 @@
-var isOnItemPage = 0;
+var state = 0;
 
 $(document).ready(function() {
   $.get("/userInfo", success);
@@ -153,6 +153,7 @@ $(document).ready(function() {
           state = 1;
           var newDiv = "<div id=\"itemPageback\"><h2 id=\"name\" class=\"itemLabel\" style=\"padding-top:30px;padding-left:40px\">%ITEM%</h2><div style=\"margin-top: 30px\"></div><div id=\"holder\" class=\"bigHolder\"><div class=\"infoHolder\"><label id=\"itemPrice\" style=\"margin-left:15px;padding-top:25px;font-size:48px\">%PRICE%</label><label id=\"shipping\" style=\"padding-top:5px;font-size:12px\">%SHIPPING%</label><div style=\"margin-top: 30px\"></div><label id=\"itemDesc\" style=\"margin-left:15px\">%DESC%</label><div style=\"margin-top: 40px\"></div><label id=\"itemClick\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemClickNum\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemOrders\" style=\"margin-left:15px\">%INFO%</label><div style=\"margin-top: 10px\"></div><label id=\"itemID\" style=\"margin-left:15px\">%ID%</label></div><button id=\"addToCart\" class=\"bigButton\">ADD TO CART</button></div></div>";
           $("#sessionPageback").replaceWith(newDiv);
+          $("#searchBack").replaceWith(newDiv);
           $("#toolbar").attr("id", "fakeToolbar");
           $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 

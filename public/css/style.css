@@ -443,6 +443,7 @@ h3 {
   animation: flyInFromBottom 1s 1 ease;
   margin: 15px;
   flex-wrap: wrap;
+  cursor: pointer;
 }
 
 #searchBack {
