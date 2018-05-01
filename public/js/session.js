@@ -103,7 +103,7 @@ $(document).ready(function() {
     }, function(data) {
       for (let i = 0; i < data.items.length; i++)
         if (data.items[i])
-      appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
+          appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
 
       $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
       $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
