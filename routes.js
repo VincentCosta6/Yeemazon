@@ -272,10 +272,9 @@ router.post("/changeItem", function(req, res) {
 			if(err) throw err;
 			if(!item)
 				return res.json({passed:false, reason:"Item not found"});
-			var newItem = {};
 			var changed = false;
 			if(req.body.name !== item.name)	{
-				newItem.name = req.body.name;
+				item.name = req.body.name;
 				changed = true;
 			}
 			if(req.body.description !== item.description) {
@@ -313,12 +312,14 @@ router.post("/deleteItem", function(req, res) {
 
 	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-	if(!check.passed)	return res.json(check);
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
+		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		if(!check.passed)	return res.json(check);
 
-	products.findOneAndRemove({_id:req.body._id}, (err, item) => {
-		if(err || !item) return res.json({passed : false, reason : "Item not found"});
-		return res.json({passed:true, reason:"Successfully removed"});
+		products.findOneAndRemove({_id:req.body._id}, (err, item) => {
+			if(err || !item) return res.json({passed : false, reason : "Item not found"});
+			return res.json({passed:true, reason:"Successfully removed"});
+		});
 	});
 });
 
