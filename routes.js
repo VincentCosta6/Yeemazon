@@ -25,6 +25,7 @@ mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
 let db = mongoose.connection;
 let products = require('./models/products');
 let users = require('./models/users');
+let messages = require('./models/messages');
 
 
 
@@ -37,6 +38,9 @@ db.once('open',function() {
 	});
 	products.count({}, (err, count) => {
 		console.log("Number of products: " + count);
+	});
+	messages.count({}, (err, count) => {
+		console.log("Number of cats: " + count);
 	});
 });
 db.on('error',function(err){
@@ -325,8 +329,9 @@ router.post("/deleteItem", function(req, res) {
 
 
 router.post("/addToCart", function(req, res) {
-	if(!req.body.itemID || req.body.itemID == 0)
-		return res.json({error:"Ryan stop"});
+	let bodyChecks = [req.body.itemID];
+
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 	users.update({username:req.session_state.user.username}, { $push: { Cart: req.body.itemID}}, (err, user) =>{
 		if(err) throw err;
 		return res.json({status:"Successful addition to cart"});
@@ -354,8 +359,10 @@ router.post("/itemClicked", function(req, res) {
 					found = true;
 					break;
 				}
-			if(!found)
+			if(!found) {
 				product.usersClicked.push(req.session_state.user.username);
+				product.uniqueClicks++;
+			}
 			product.save((err) => {
 				if(err) throw err;
 			});
