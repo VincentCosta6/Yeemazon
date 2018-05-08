@@ -6,12 +6,6 @@
 	
 	"saltRounds" : 10,
 	
-	"adminName" : "admin",
-	"adminPass" : "pass",
-	"adminEmail" : "costa.vincent132@gmail.com",
-	"adminIPs" : ["::ffff:192.168.1.135",
-				  "::ffff:10.73.122.151"],
-	
 	"link" : "mongodb://admin:adminCheck@ds014388.mlab.com:14388/yeemazon",
 	
 	"host" : "smtp.gmail.com",

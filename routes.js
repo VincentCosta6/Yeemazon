@@ -25,6 +25,7 @@ mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
 let db = mongoose.connection;
 let products = require('./models/products');
 let users = require('./models/users');
+let devKeys = require('./models/devKeys');
 let messages = require('./models/messages');
 
 
@@ -38,6 +39,9 @@ db.once('open',function() {
 	});
 	products.count({}, (err, count) => {
 		console.log("Number of products: " + count);
+	});
+	devKeys.count({}, (err, count) => {
+		console.log("Number of keys" + count);
 	});
 	messages.count({}, (err, count) => {
 		console.log("Number of cats: " + count);
@@ -388,9 +392,19 @@ router.post("/sendMessage", function(req, res) {
 		sendEmail(user.email, req.body.emailPass, req.body.to, req.body.subject, req.body.content);
 	});
 });
+router.post("/requestDevKey", function(req, res){
 
+})
 router.post("/generateDevKey", function(req, res){
+	users.findOne({username:req.session_state.username}, (err, user) => {
+		if(err) throw err;
 
+		let check = permissionAndXSSCheck(user, "admin", []);
+		if(check.passed === false) return res.json(check);
+
+		let newDevKey = {devKey:uuidv4()};
+		db.collection('devKeys').insert(newDevKey);
+	});
 });
 
 router.get("/updateSchema", function(req, res) {
@@ -502,6 +516,7 @@ function loginAttempt(req, res) {
 				var sessionKey = uuidv4();
 				req.session_state.key = sessionKey;
 				user.sessionKeys.push(sessionKey);
+				user.session_state.user = user;
 				user.save((err) =>{
 					console.log("User: " + user.username + " has logged in on IP: " + ip);
 					res.json({redirect:"/session"});
