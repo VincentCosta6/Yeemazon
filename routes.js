@@ -44,7 +44,7 @@ db.once('open',function() {
 		console.log("Number of keys: " + count);
 	});
 	messages.count({}, (err, count) => {
-		console.log("Number of cats: " + count);
+		console.log("Number of chats: " + count);
 	});
 });
 db.on('error',function(err){
@@ -79,7 +79,7 @@ function handler(req, res){
 	res.sendFile(__dirname + ("\\public\\views\\" + ((req.session_state.active) ? "session.html" : "login.html")));
 }
 
-let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login"];
+let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "messages", "newMessage"];
 
 for(let i in getters)
 	router.get("/" + getters[i], function(req, res){
@@ -124,7 +124,7 @@ router.get("/userInfo",function(req,res){
 	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user) {
 		req.session_state.reset();
 		console.log("Resetting session");
-		return res.json({redirect:"/"});
+		return res.redirect("/login");
 	}
 	var ip = getIP(req);
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
@@ -142,7 +142,7 @@ router.get("/userInfo",function(req,res){
 			return res.json({user:user});
 		else{
 			req.session_state.reset();
-			return res.json({redirect:"/"});
+			return res.redirect("/login");
 		}
 	});
 });
@@ -417,7 +417,7 @@ router.post("/sendMessage", function(req, res) {
 			{
 				let bodyChecks = [req.body.messageSent, req.body.users, req.body.message];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
-				
+
 				let toSend = req.session_state.user.username + ":" + req.body.message;
 				messages.update({Users:req.body.users}, {$push: {messages : toSend}}, function(err, lobby) {
 					if(err) throw err;
