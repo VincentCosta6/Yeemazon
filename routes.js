@@ -41,7 +41,7 @@ db.once('open',function() {
 		console.log("Number of products: " + count);
 	});
 	devKeys.count({}, (err, count) => {
-		console.log("Number of keys" + count);
+		console.log("Number of keys: " + count);
 	});
 	messages.count({}, (err, count) => {
 		console.log("Number of cats: " + count);
@@ -172,9 +172,33 @@ router.get("/verify", function(req, res){
 
 router.get("/requestPermission", function(req, res) {
 	if(!req.session_state || req.session_state.active === false || !req.query.permission || req.query.permission === "")
-		return res.json({errpr:"Field does not exist"});
+		return res.json({error:"Field does not exist"});
 	user.findOne({username:req.session_state.user.username}, (err, user) => {
 			sendEmail(user.email, req.body.emailPass, "costa.vincent132@gmail.com", req.body.subject, user.username + " is requesting " + req.query.permission + " for their account");
+	});
+});
+
+router.get("/messageLength", function(req, res) {
+	messages.findOne({Users: req.body.users}, (err, lobby) => {
+		if(err) throw err;
+		return res.json({length: lobby.messages.length});
+	});
+});
+
+router.get("/messages", function(req, res) {
+	messages.findOne({Users: req.body.users}, (err, lobby) => {
+		if(err) throw err;
+
+		let found = false;
+		for(let i in lobby.Users)
+			if(lobby.Users[i] === req.session_state.user.username)
+				found = true;
+		if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
+
+		let ret = [];
+		for(let i=req.body.start; i<req.body.length; i++)
+			ret.push(lobby.messages[i]);
+		return res.json({messages: ret});
 	});
 });
 
@@ -384,14 +408,50 @@ router.post("/sendEmail", function(req, res) {
 });
 
 router.post("/sendMessage", function(req, res) {
-	if(!req.body.itemID || req.body.itemID == 0)
-		return res.json({error:"Ryan stop"});
-	users.findOne({username:req.session_state.user.username}, (err, user) => {
-		if(err) throw err;
 
-		sendEmail(user.email, req.body.emailPass, req.body.to, req.body.subject, req.body.content);
+	users.findOne({username:req.session_state.user.username}, (err, user) => {
+			if(err) throw err;
+			if(!user) return res.json({status:"You are not logged in"});
+
+			if(req.body.messageSent)
+			{
+				let bodyChecks = [req.body.messageSent, req.body.users, req.body.message];
+				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+				
+				let toSend = req.session_state.user.username + ":" + req.body.message;
+				messages.update({Users:req.body.users}, {$push: {messages : toSend}}, function(err, lobby) {
+					if(err) throw err;
+					return res.json({status:"Delivered"});
+				});
+			}
+			else if(req.body.inviteUser)
+			{
+				let bodyChecks = [req.body.inviteUser, req.body.users, req.body.invitee];
+				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+				messages.update({Users:req.body.users}, {$push: {Users : req.body.invitee}}, function(err, lobby){
+					if(err) throw err;
+					if(!lobby) res.json({status: "Lobby not found"});
+					return res.json({status:"Invited"});
+				});
+			}
+			else if(req.body.newLobby)
+			{
+				let bodyChecks = [req.body.newLobby, req.body.users];
+				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+				let list = req.body.users;
+				let messages = [req.session_state.user.username + " has started a lobby"];
+				let newLobby = {
+					Users: list,
+					messages : messages
+				};
+				db.collection('messages').insert(newLobby);
+				return res.json({status: "Lobby created with " + req.body.users.length + " others"});
+			}
+		});
 	});
-});
+
 router.post("/requestDevKey", function(req, res){
 
 })
@@ -424,7 +484,6 @@ router.get("/updateSchema", function(req, res) {
 
 	});
 });
-let devKeys = [];
 
 //////////////////////////END OF POST REQUESTS//////////////////////////////
 
@@ -516,7 +575,6 @@ function loginAttempt(req, res) {
 				var sessionKey = uuidv4();
 				req.session_state.key = sessionKey;
 				user.sessionKeys.push(sessionKey);
-				user.session_state.user = user;
 				user.save((err) =>{
 					console.log("User: " + user.username + " has logged in on IP: " + ip);
 					res.json({redirect:"/session"});
@@ -585,10 +643,6 @@ function verificationExists(username) {
 		if(verificationKeys[i][1].username === username)
 			return true;
 	return false;
-}
-
-function userHasPermission(userPermission, permissionLevel){ /// will update for actual permission levels, not so that they are exactly the same
-	return userPermission === permissionLevel;
 }
 
 function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
