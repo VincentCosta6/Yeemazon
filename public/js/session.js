@@ -1,8 +1,16 @@
-//State determines the size of the toolbar; 0 when on a session page, 1 when on a specific item page
 var state = 0;
 
 $(document).ready(function() {
-  $.get("/userInfo", success);
+
+  $.get("/userInfo", function(data) {
+    if (data.redirect === "/") {
+      window.location = window.location.href.split("/")[1] + "/";
+      return;
+    }
+    $("#userGreeting").html("Hello " + data.user.username + "!");
+    $("#password").html(data.user.password);
+  });
+
   $("#logout").click(() => {
     $.post("/logout", (data) => {
       window.location = window.location.href.split("/")[1] + data.redirect;
@@ -16,13 +24,7 @@ $(document).ready(function() {
   //CART CLICK METHOD
   $("#cart").click(() => {
     checkState();
-
-    //LOAD CART HTML
-    var divs = ["#searchBack", "#sessionPageback", "#itemPageback"];
-    for (let i in divs) {
-      $(divs[i]).replaceWith("<div id=\"ordersPageback\"><div>");
-      $("#ordersPageback").load("css/elements.html #ordersPageback>*");
-    }
+    replaceDiv("#ordersPageback");
 
     //CREATE CART ITEMS
     $.get("/cartItems", function(data) {
@@ -31,54 +33,7 @@ $(document).ready(function() {
         let id = data.items[i]._id;
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label class=\"remove\" id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
         $(".orderHolder").append(divCreator);
-        var redirect = function(){
-          $.post("/itemClicked", {
-            itemID: id
-          }, (data) => {
-            console.log("Clicked")
-          });
-
-          //LOAD ITEM PAGE HTML
-          state = 1;
-          var divs = ["#sessionPageback"];
-          for (let i in divs) {
-            $(divs[i]).replaceWith("<div id=\"itemPageback\"><div>");
-            $("#itemPageback").load("css/elements.html #itemPageback>*");
-          }
-
-          //SCALE TOOLBAR DOWN
-          $("#toolbar").attr("id", "fakeToolbar");
-          $("#userGreeting").css("transform", "translateX(465px)");
-          $("#userGreeting").css("animation", "slideAcross 1s 1");
-          $("#anotherFakeToolbar").attr("id", "fakeToolbar");
-
-          //POPULATE ITEM PAGE WITH DATA
-          $.get("/getItemInfo", {
-            _id: id
-          }, (data) => {
-            data.item = data.item[0];
-            $("#name").html("Yeemazon™ Official " + data.item.name);
-            $(document).prop('title', 'Yeemazon - ' + data.item.name);
-            $("#itemPrice").html("$" + data.item.price);
-            $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
-            $("#itemDesc").html(data.item.description);
-            $("#itemClick").html("Clicks: " + data.item.clicks);
-            $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
-            $("#itemOrders").html("Ordered: " + data.item.numOrders);
-            $("#itemID").html("Item ID: " + data.item._id);
-            $("#holder").css("background-image", "url(" + data.item.link + ")");
-            id = data.item._id;
-          });
-
-          //ADD TO CART BUTTON CODE
-          $("#addToCart").click(() => {
-            $.post("/addToCart", {
-              itemID: id
-            }, (data) => {
-              alert(((data.status) ? "Item added to cart" : "Something went wrong"));
-            });
-          });
-        };
+        var redirect = loadCartItems(data);
 
         //REMOVE FROM CART BUTTON CODE
         var remover = function() {
@@ -108,13 +63,7 @@ $(document).ready(function() {
   //HEADER CLICK CODE
   $(".loginHeader").click(() => {
     checkState();
-
-    //LOAD SESSION HTML
-    var divs = ["#searchBack", "#sessionPageback", "#ordersPageback", "#itemPageback"];
-    for (let i in divs) {
-      $(divs[i]).replaceWith("<div id=\"sessionPageback\"><div>");
-      $("#sessionPageback").load("css/elements.html #sessionPageback>*");
-    }
+    replaceDiv("#sessionPageback");
 
     loadSessionPage();
   });
@@ -140,12 +89,10 @@ $(document).ready(function() {
 
   $("#search").blur(function() {
     if ($(this).val() == "") {
-      $(this).val('Search for an item');
+      $(this).vabbl('Search for an item');
     }
   });
-});
-//END OF DOCUMENT READY FUNCTION
-
+}
 
 
 //XSS PREVENTION
@@ -161,179 +108,229 @@ $(document).keypress(function(e) {
     $('#request').prop('hidden', false);
 });
 
-//HELPER METHOD FOR APPENDING ITEM DIVS TO PAGE
-function appender(id, link, name, price, clicks, uniqueClicks, which) {
-  var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label id=\"boxLabel\">" + name + "</label><br><label id=\"boxLabel\">$" + price + "</label></div>";
-  $("#items" + which).append(divCreator);
-  $("#" + id).click(function() {
 
-    $.post("/itemClicked", {
-      itemID: id
-    }, (data) => {
-      console.log("Clicked")
-    });
 
-    //LOAD ITEM PAGE HTML
-    state = 1;
-    var divs = ["#sessionPageback"];
-    for (let i in divs) {
-      $(divs[i]).replaceWith("<div id=\"itemPageback\"><div>");
-      $("#itemPageback").load("css/elements.html #itemPageback>*");
-    }
 
-    //SCALE TOOLBAR DOWN
-    $("#toolbar").attr("id", "fakeToolbar");
-    $("#userGreeting").css("transform", "translateX(465px)");
-    $("#userGreeting").css("animation", "slideAcross 1s 1");
-    $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 
-    //POPULATE ITEM PAGE WITH DATA
-    $.get("/getItemInfo", {
-      _id: id
-    }, (data) => {
-      data.item = data.item[0];
-      $("#name").html("Yeemazon™ Official " + data.item.name);
-      $(document).prop('title', 'Yeemazon - ' + data.item.name);
-      $("#itemPrice").html("$" + data.item.price);
-      $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
-      $("#itemDesc").html(data.item.description);
-      $("#itemClick").html("Clicks: " + data.item.clicks);
-      $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
-      $("#itemOrders").html("Ordered: " + data.item.numOrders);
-      $("#itemID").html("Item ID: " + data.item._id);
-      $("#holder").css("background-image", "url(" + data.item.link + ")");
-      id = data.item._id;
-    });
 
-    //ADD TO CART BUTTON CODE
-    $("#addToCart").click(() => {
-      $.post("/addToCart", {
-        itemID: id
-      }, (data) => {
-        alert(((data.status) ? "Item added to cart" : "Something went wrong"));
-      });
-    });
-  });
-}
-var username, password;
 
-//USER DATA POPULATION FOR ALL PAGES
-function success(data) {
-  if (data.redirect === "/") {
-    window.location = window.location.href.split("/")[1] + "/";
-    return;
-  }
-  $("#userGreeting").html("Hello " + data.user.username + "!");
-  $("#password").html(data.user.password);
-}
+///////////////////////////////////
+//HELPER METHODS FOR LOADING PAGES/
+///////////////////////////////////
 
-//PAGE LOADING METHODS
+
+
+
+
+
 
 function loadSessionPage() {
-  //POPULATE SESSION PAGE WITH ITEMS
-  let searcher = ["popular", "under20", "yee"];
-  for (let i in searcher)
-    $.get("/findItems", {
-      keywords: searcher[i],
-      appending: (++i)
-    }, function(data) {
-      //CHANGE THIS LATER
-      for (let i2 = 0; i2 < 4; i2++)
-        if (data.items[i2])
-          appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
-          console.log(data.items[i2]._id + data.items[i2].link + data.items[i2].name + data.items[i2].price + data.items[i2].clicks + data.items[i2].usersClicked.length + data.appending);
-    });
-  //
-  // //LOAD FULL ITEM LIST
-  // $.get("/findItems", {
-  //   keywords: "cool"
-  // }, function(data) {
-  //   for (let i = 0; i < data.items.length; i++)
-  //     if (data.items[i])
-  //       appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
+//POPULATE SESSION PAGE WITH ITEMS
+let searcher = ["popular", "under20", "yee"];
+for (let i in searcher)
+  $.get("/findItems", {
+    keywords: searcher[i],
+    appending: (++i)
+  }, function(data) {
+    //CHANGE THIS LATER
+    for (let i2 = 0; i2 < 4; i2++)
+      if (data.items[i2])
+        appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
+    console.log(data.items[i2]._id + data.items[i2].link + data.items[i2].name + data.items[i2].price + data.items[i2].clicks + data.items[i2].usersClicked.length + data.appending);
+  });
+//
+// //LOAD FULL ITEM LIST
+// $.get("/findItems", {
+//   keywords: "cool"
+// }, function(data) {
+//   for (let i = 0; i < data.items.length; i++)
+//     if (data.items[i])
+//       appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
 
-    //SCALE PAGE BACKING FOR NUMBER OF ITEMS
-    $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
-    $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
+//SCALE PAGE BACKING FOR NUMBER OF ITEMS
+$(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
+$("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
 }
 
 function loadSearchPage() {
-  //LOAD SEARCH PAGE HTML
-  var divs = ["#searchBack", "#sessionPageback", "#ordersPageback", "#itemPageback"];
-  for (let i in divs) {
-    $(divs[i]).replaceWith("<div id=\"searchBack\"><div>");
-  }
-  $("#searchBack").load("css/elements.html #searchBack>*");
-  $(".itemLabel").html("No search results");
+//LOAD SEARCH PAGE HTML
+replaceDiv("#searchBack");
+$(".itemLabel").html("No search results");
 
-  //LOAD SEARCHED ITEMS
-  $.get("/findItems", {
-    keywords: $("#search").val()
-  }, function(data) {
-    for (var i = 0; i < data.items.length; i++) {
+//LOAD SEARCHED ITEMS
+$.get("/findItems", {
+  keywords: $("#search").val()
+}, function(data) {
+  for (var i = 0; i < data.items.length; i++) {
 
-      let id = data.items[i]._id;
-      var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
-      $(".searchHolder").append(divCreator);
-      $("#" + id).click(function() {
+    let id = data.items[i]._id;
+    var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
+    $(".searchHolder").append(divCreator);
+    $("#" + id).click(function() {
 
-        //LOAD ITEM PAGE HTML
-        state = 1;
-        var divs = ["#searchBack", "#sessionPageback"];
-        for (let i in divs) {
-          $(divs[i]).replaceWith("<div id=\"itemPageback\"><div>");
-          $("#itemPageback").load("css/elements.html #itemPageback>*");
-        }
+      //LOAD ITEM PAGE HTML
+      state = 1;
+      replaceDiv("#itemPageback");
 
-        //SCALE TOOLBAR DOWN
-        $("#userGreeting").css("transform", "translateX(465px)");
-        $("#userGreeting").css("animation", "slideAcross 1s 1");
-        $("#toolbar").attr("id", "fakeToolbar");
-        $("#anotherFakeToolbar").attr("id", "fakeToolbar");
+      //SCALE TOOLBAR DOWN
+      $("#userGreeting").css("transform", "translateX(465px)");
+      $("#userGreeting").css("animation", "slideAcross 1s 1");
+      $("#toolbar").attr("id", "fakeToolbar");
+      $("#anotherFakeToolbar").attr("id", "fakeToolbar");
 
-        //POPULATE ITEM PAGE WITH DATA
-        $.get("/getItemInfo", {
-          _id: id
-        }, (data) => {
-          data.item = data.item[0];
-          $("#name").html("Yeemazon™ Official " + data.item.name);
-          $(document).prop('title', 'Yeemazon - ' + data.item.name);
-          $("#itemPrice").html("$" + data.item.price);
-          $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
-          $("#itemDesc").html(data.item.description);
-          $("#itemClick").html("Clicks: " + data.item.clicks);
-          $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
-          $("#itemOrders").html("Ordered: " + data.item.numOrders);
-          $("#itemID").html("Item ID: " + data.item._id);
-          $("#holder").css("background-image", "url(" + data.item.link + ")");
-          id = data.item._id;
-        });
-
-        //ADD ITEM TO CART CODE
-        $("#addToCart").click(() => {
-          $.post("/addToCart", {
-            itemID: id
-          }, (data) => {
-            alert(((data.status) ? "Item added to cart" : "Something went wrong"));
-          });
-        });
+      //POPULATE ITEM PAGE WITH DATA
+      $.get("/getItemInfo", {
+        _id: id
+      }, (data) => {
+        data.item = data.item[0];
+        $("#name").html("Yeemazon™ Official " + data.item.name);
+        $(document).prop('title', 'Yeemazon - ' + data.item.name);
+        $("#itemPrice").html("$" + data.item.price);
+        $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+        $("#itemDesc").html(data.item.description);
+        $("#itemClick").html("Clicks: " + data.item.clicks);
+        $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+        $("#itemOrders").html("Ordered: " + data.item.numOrders);
+        $("#itemID").html("Item ID: " + data.item._id);
+        $("#holder").css("background-image", "url(" + data.item.link + ")");
+        id = data.item._id;
       });
 
-      //FINISH POPULATING SEARCH PAGE WITH DATA
-      $(".searchHolder").css("height", 230 * (Math.floor((data.items.length / 6)) + 1));
-      $("#searchBack").css("height", 350 * (Math.floor((data.items.length / 6)) + 1));
-      $(".itemLabel").html("No search results");
-      $(".itemLabel").html("Search Results for " + "\"" + $("#search").val() + "\" -- " + data.items.length + " results");
-    }
-  });
+      //ADD ITEM TO CART CODE
+      $("#addToCart").click(() => {
+        $.post("/addToCart", {
+          itemID: id
+        }, (data) => {
+          alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+        });
+      });
+    });
+
+    //FINISH POPULATING SEARCH PAGE WITH DATA
+    $(".searchHolder").css("height", 230 * (Math.floor((data.items.length / 6)) + 1));
+    $("#searchBack").css("height", 350 * (Math.floor((data.items.length / 6)) + 1));
+    $(".itemLabel").html("No search results");
+    $(".itemLabel").html("Search Results for " + "\"" + $("#search").val() + "\" -- " + data.items.length + " results");
+  }
+});
 }
 
+//CHECKS SESSION STATE (FOR TOOLBAR)
 function checkState() {
-  if (state) {
-    //RESET TOOLBAR IF NEEDED
-    $("#fakeToolbar").attr("id", "anotherFakeToolbar");
-    state = 0;
-    $("#userGreeting").css("transform", "translateX(0px)");
-    $("#userGreeting").css("animation", "slideBack 1s 1");
-  }
+if (state) {
+  //RESET TOOLBAR IF NEEDED
+  $("#fakeToolbar").attr("id", "anotherFakeToolbar");
+  state = 0;
+  $("#userGreeting").css("transform", "translateX(0px)");
+  $("#userGreeting").css("animation", "slideBack 1s 1");
 }
+}
+
+function loadCartItems(data) {
+$.post("/itemClicked", {
+  itemID: id
+}, (data) => {
+  console.log("Clicked")
+});
+
+//LOAD ITEM PAGE HTML
+state = 1;
+replaceDiv("#itemPageback");
+
+//SCALE TOOLBAR DOWN
+$("#toolbar").attr("id", "fakeToolbar");
+$("#userGreeting").css("transform", "translateX(465px)");
+$("#userGreeting").css("animation", "slideAcross 1s 1");
+$("#anotherFakeToolbar").attr("id", "fakeToolbar");
+
+//POPULATE ITEM PAGE WITH DATA
+$.get("/getItemInfo", {
+  _id: id
+}, (data) => {
+  data.item = data.item[0];
+  $("#name").html("Yeemazon™ Official " + data.item.name);
+  $(document).prop('title', 'Yeemazon - ' + data.item.name);
+  $("#itemPrice").html("$" + data.item.price);
+  $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+  $("#itemDesc").html(data.item.description);
+  $("#itemClick").html("Clicks: " + data.item.clicks);
+  $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+  $("#itemOrders").html("Ordered: " + data.item.numOrders);
+  $("#itemID").html("Item ID: " + data.item._id);
+  $("#holder").css("background-image", "url(" + data.item.link + ")");
+  id = data.item._id;
+});
+
+//ADD TO CART BUTTON CODE
+$("#addToCart").click(() => {
+  $.post("/addToCart", {
+    itemID: id
+  }, (data) => {
+    alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+  });
+});
+}
+
+function loadItemPage(id) {
+
+$.post("/itemClicked", {
+  itemID: id
+}, (data) => {
+  console.log("Clicked")
+});
+
+//LOAD ITEM PAGE HTML
+state = 1;
+replaceDiv("#itemPageback");
+
+//SCALE TOOLBAR DOWN
+$("#toolbar").attr("id", "fakeToolbar");
+$("#userGreeting").css("transform", "translateX(465px)");
+$("#userGreeting").css("animation", "slideAcross 1s 1");
+$("#anotherFakeToolbar").attr("id", "fakeToolbar");
+
+//POPULATE ITEM PAGE WITH DATA
+$.get("/getItemInfo", {
+  _id: id
+}, (data) => {
+  data.item = data.item[0];
+  $("#name").html("Yeemazon™ Official " + data.item.name);
+  $(document).prop('title', 'Yeemazon - ' + data.item.name);
+  $("#itemPrice").html("$" + data.item.price);
+  $("#shipping").html(" + $" + Math.floor((data.item.price / 10)) + ".99 shipping");
+  $("#itemDesc").html(data.item.description);
+  $("#itemClick").html("Clicks: " + data.item.clicks);
+  $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
+  $("#itemOrders").html("Ordered: " + data.item.numOrders);
+  $("#itemID").html("Item ID: " + data.item._id);
+  $("#holder").css("background-image", "url(" + data.item.link + ")");
+  id = data.item._id;
+});
+
+//ADD TO CART BUTTON CODE
+$("#addToCart").click(() => {
+  $.post("/addToCart", {
+    itemID: id
+  }, (data) => {
+    alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+  });
+});
+}
+
+function replaceDiv(replacer) {
+var divs = ["#searchBack", "#sessionPageback", "#ordersPageback", "#itemPageback"];
+var parsedString = replacer.split("#")[1];
+for (let i in divs) {
+  $(divs[i]).replaceWith("<div id=" + parsedString + "><div>");
+  $(replacer).load("external/elements.html " + replacer + ">*");
+}
+}
+
+
+//HELPER METHOD FOR APPENDING ITEM DIVS TO PAGE
+function appender(id, link, name, price, clicks, uniqueClicks, which) {
+var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label id=\"boxLabel\">" + name + "</label><br><label id=\"boxLabel\">$" + price + "</label></div>";
+$("#items" + which).append(divCreator);
+$("#" + id).click(loadItemPage(id));
+}
+var username, password;
