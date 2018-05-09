@@ -79,7 +79,7 @@ function handler(req, res){
 	res.sendFile(__dirname + ("\\public\\views\\" + ((req.session_state.active) ? "session.html" : "login.html")));
 }
 
-let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "messages", "newMessage"];
+let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "messages", "lobbyFinder"];
 
 for(let i in getters)
 	router.get("/" + getters[i], function(req, res){
@@ -199,6 +199,14 @@ router.get("/messages", function(req, res) {
 		for(let i=req.body.start; i<req.body.length; i++)
 			ret.push(lobby.messages[i]);
 		return res.json({messages: ret});
+	});
+});
+
+router.get("/myLobbies", (req, res) => {
+	messages.find({Users:req.session_state.user.username}, (err, lobbies) => {
+		if(err) throw err;
+
+		return res.json({lobbies: lobbies});
 	});
 });
 
