@@ -49,8 +49,7 @@ function submitForm(e) {
 }
 
 function success(data) {
-  if (!data.redirect)
-    window.location = window.location.href.split("/")[1] + "/session";
+  
 }
 
 function signup() {

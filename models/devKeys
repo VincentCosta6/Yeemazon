@@ -1,0 +1,10 @@
+const mongoose = require('mongoose');
+
+let devSchema = mongoose.Schema({
+	devkey : {
+		type : String,
+		required: true
+	}
+});
+
+let devKeys = module.exports = mongoose.model('devKeys', devSchema);

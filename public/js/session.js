@@ -28,7 +28,7 @@ $(document).ready(function() {
     $.get("/cartItems", function(data) {
       for (var i = 0; i < data.items.length; i++) {
 
-        let id = data.items[i]._id;
+        id = data.items[i]._id;
         var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label class=\"remove\" id = \"" + id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
         $(".orderHolder").append(divCreator);
         var redirect = function(){
@@ -72,6 +72,7 @@ $(document).ready(function() {
 
           //ADD TO CART BUTTON CODE
           $("#addToCart").click(() => {
+            console.log("Here");
             $.post("/addToCart", {
               itemID: id
             }, (data) => {
@@ -207,6 +208,7 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
 
     //ADD TO CART BUTTON CODE
     $("#addToCart").click(() => {
+      console.log("Here");
       $.post("/addToCart", {
         itemID: id
       }, (data) => {
@@ -219,10 +221,6 @@ var username, password;
 
 //USER DATA POPULATION FOR ALL PAGES
 function success(data) {
-  if (data.redirect === "/") {
-    window.location = window.location.href.split("/")[1] + "/";
-    return;
-  }
   $("#userGreeting").html("Hello " + data.user.username + "!");
   $("#password").html(data.user.password);
 }
@@ -238,10 +236,12 @@ function loadSessionPage() {
       appending: (++i)
     }, function(data) {
       //CHANGE THIS LATER
-      for (let i2 = 0; i2 < 4; i2++)
+      $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
+      $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
+      for (let i2 = 0; i2 < 4; i2++){
         if (data.items[i2])
           appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
-          console.log(data.items[i2]._id + data.items[i2].link + data.items[i2].name + data.items[i2].price + data.items[i2].clicks + data.items[i2].usersClicked.length + data.appending);
+      }
     });
   //
   // //LOAD FULL ITEM LIST
@@ -253,8 +253,7 @@ function loadSessionPage() {
   //       appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
 
     //SCALE PAGE BACKING FOR NUMBER OF ITEMS
-    $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
-    $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
+
 }
 
 function loadSearchPage() {
@@ -265,14 +264,14 @@ function loadSearchPage() {
   }
   $("#searchBack").load("css/elements.html #searchBack>*");
   $(".itemLabel").html("No search results");
-
+  let id;
   //LOAD SEARCHED ITEMS
   $.get("/findItems", {
     keywords: $("#search").val()
   }, function(data) {
     for (var i = 0; i < data.items.length; i++) {
 
-      let id = data.items[i]._id;
+      id = data.items[i]._id;
       var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
       $(".searchHolder").append(divCreator);
       $("#" + id).click(function() {
@@ -311,6 +310,7 @@ function loadSearchPage() {
 
         //ADD ITEM TO CART CODE
         $("#addToCart").click(() => {
+          console.log("Here");
           $.post("/addToCart", {
             itemID: id
           }, (data) => {
