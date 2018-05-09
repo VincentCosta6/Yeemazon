@@ -121,10 +121,10 @@ router.get("/getItemInfo", function(req, res){
 
 
 router.get("/userInfo",function(req,res){
-	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user) {
+	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user || !req.session_state.user.username) {
 		req.session_state.reset();
 		console.log("Resetting session");
-		return res.redirect("/login");
+		return res.json({redirect: "/"})
 	}
 	var ip = getIP(req);
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
@@ -142,7 +142,7 @@ router.get("/userInfo",function(req,res){
 			return res.json({user:user});
 		else{
 			req.session_state.reset();
-			return res.redirect("/login");
+			return res.json({redirect: "/"})
 		}
 	});
 });

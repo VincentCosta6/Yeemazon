@@ -18,7 +18,6 @@ app.use(clientSessions({
   maxAge: startup.cookieExpirationinMS
 }));
 
-
 app.use('/', express.static('./'));
 app.use('/views', express.static('./public/views'));
 app.use('/css', express.static('./public/css'));
