@@ -21,5 +21,5 @@ function success(data) {
   if(data.redirect) window.location = window.location.href.split("/")[1] + data.redirect;
 
   username = data.user.username;
-  $("#greeting").html("Hello " + username);
+  $("#userGreeting").html("Hello " + username);
 }
