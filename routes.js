@@ -79,7 +79,7 @@ function handler(req, res){
 	res.sendFile(__dirname + ("\\public\\views\\" + ((req.session_state.active) ? "session.html" : "login.html")));
 }
 
-let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "messages", "lobbyFinder"];
+let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "lobby", "lobbyFinder"];
 
 for(let i in getters)
 	router.get("/" + getters[i], function(req, res){
@@ -179,16 +179,17 @@ router.get("/requestPermission", function(req, res) {
 });
 
 router.get("/messageLength", function(req, res) {
-	messages.findOne({Users: req.body.users}, (err, lobby) => {
+	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
+		if(!lobby) return res.json({status:"Couldnt find"});
 		return res.json({length: lobby.messages.length});
 	});
 });
 
 router.get("/messages", function(req, res) {
-	messages.findOne({Users: req.body.users}, (err, lobby) => {
+	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
-
+		if(!lobby) return res.json({status:"Couldnt find"});
 		let found = false;
 		for(let i in lobby.Users)
 			if(lobby.Users[i] === req.session_state.user.username)
@@ -196,8 +197,9 @@ router.get("/messages", function(req, res) {
 		if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
 
 		let ret = [];
-		for(let i=req.body.start; i<req.body.length; i++)
+		for(let i=req.query.start; i<(parseInt(req.query.length) + parseInt(req.query.start)); i++) {
 			ret.push(lobby.messages[i]);
+		}
 		return res.json({messages: ret});
 	});
 });
@@ -423,11 +425,11 @@ router.post("/sendMessage", function(req, res) {
 
 			if(req.body.messageSent)
 			{
-				let bodyChecks = [req.body.messageSent, req.body.users, req.body.message];
+				let bodyChecks = [req.body.messageSent, req.body._id, req.body.message];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 				let toSend = req.session_state.user.username + ":" + req.body.message;
-				messages.update({Users:req.body.users}, {$push: {messages : toSend}}, function(err, lobby) {
+				messages.update({_id:req.body._id}, {$push: {messages : toSend}}, function(err, lobby) {
 					if(err) throw err;
 					return res.json({status:"Delivered"});
 				});
@@ -445,14 +447,16 @@ router.post("/sendMessage", function(req, res) {
 			}
 			else if(req.body.newLobby)
 			{
-				let bodyChecks = [req.body.newLobby, req.body.users];
+				let bodyChecks = [req.body.newLobby, req.body.users, req.body.name];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 				let list = req.body.users;
 				let messages = [req.session_state.user.username + " has started a lobby"];
+				let name = req.body.name;
 				let newLobby = {
 					Users: list,
-					messages : messages
+					messages : messages,
+					name: name
 				};
 				db.collection('messages').insert(newLobby);
 				return res.json({status: "Lobby created with " + req.body.users.length + " others"});

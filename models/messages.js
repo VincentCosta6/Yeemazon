@@ -7,7 +7,10 @@ let messageSchema = mongoose.Schema({
 	}],
 	messages: [{
 		type:String
-	}]
+	}],
+	name: {
+		type: String
+	}
 });
 
 let messages = module.exports = mongoose.model('messages', messageSchema);
