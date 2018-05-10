@@ -17,7 +17,6 @@ $(document).ready(() => {
     var userArr = $("#users").val().split(" ");
     for(let i in userArr)
       users.push(userArr[i]);
-    console.log(users);
     $.post("/sendMessage", {newLobby: "newLobby", users: users, name: $("#name").val()}, (data) => {
       alert(data.status);
     });

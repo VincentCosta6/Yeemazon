@@ -1,16 +1,8 @@
-var id, mlength;
+var id, mlength = 0;
 $(document).ready(() => {
   $.get("/userInfo", success);
   id = retreiveID(window.location.href);
-  $.get("/messageLength", {_id: id}, (data) => {
-    mlength = +data.length;
-    $.get("/messages", {_id: id, start: 0, length: +mlength}, (data2) => {
-      for(let i in data2.messages)
-      {
-          $("#list").append("<li id = \"m" + i + "\">" + data2.messages[i] + "</li>");
-      }
-    })
-  });
+
 
   $("#sendMessage").click(() => {
 
@@ -18,13 +10,31 @@ $(document).ready(() => {
       console.log(data.status);
     });
   });
-  var x = 1;
+  $("#sendInvite").click(() => {
+
+    $.post("/sendMessage", {inviteUser: "inviteUser", _id: id, invitee: $("#user").val()}, (data) => {
+      console.log(data.status);
+    });
+  });
+  $("#deleteLobby").click(() => {
+
+    $.post("/sendMessage", {removeLobby: "removeLobby", _id: id}, (data) => {
+      console.log(data.status);
+    });
+  });
+
+
+
+  var x = 1, keepGoing = true;
   function refreshData()
   {
     $.get("/messageLength", {_id: id}, (data) => {
-      if(data.length != mlength)
+      if(data.status) {
+        keepGoing = false;
+        alert(data.status);
+      }
+      else if(keepGoing && data.length != mlength)
       {
-        console.log(mlength);
         $.get("/messages", {_id: id, start: (parseInt(mlength)), length: (parseInt(data.length) - parseInt(mlength))}, (data2) => {
           mlength = parseInt(data.length);
 
@@ -35,12 +45,13 @@ $(document).ready(() => {
           window.scrollTo(0, document.body.scrollHeight);
         });
       }
+
     });
-    setTimeout(refreshData, x*1000);
+    if(keepGoing)
+      setTimeout(refreshData, x*1000);
   }
-
-
-  refreshData();
+  if(keepGoing)
+    refreshData();
 });
 
 

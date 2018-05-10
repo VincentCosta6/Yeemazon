@@ -181,7 +181,7 @@ router.get("/requestPermission", function(req, res) {
 router.get("/messageLength", function(req, res) {
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
-		if(!lobby) return res.json({status:"Couldnt find"});
+		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
 		return res.json({length: lobby.messages.length});
 	});
 });
@@ -189,7 +189,7 @@ router.get("/messageLength", function(req, res) {
 router.get("/messages", function(req, res) {
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
-		if(!lobby) return res.json({status:"Couldnt find"});
+		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
 		let found = false;
 		for(let i in lobby.Users)
 			if(lobby.Users[i] === req.session_state.user.username)
@@ -436,12 +436,13 @@ router.post("/sendMessage", function(req, res) {
 			}
 			else if(req.body.inviteUser)
 			{
-				let bodyChecks = [req.body.inviteUser, req.body.users, req.body.invitee];
+				let bodyChecks = [req.body.inviteUser, req.body._id, req.body.invitee];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
-
-				messages.update({Users:req.body.users}, {$push: {Users : req.body.invitee}}, function(err, lobby){
+				var str = req.session_state.user.username + " has invited " + req.body.invitee;
+				messages.update({_id:req.body._id}, {$push: {Users: req.body.invitee, messages: str}}, function(err, lobby){
 					if(err) throw err;
 					if(!lobby) res.json({status: "Lobby not found"});
+
 					return res.json({status:"Invited"});
 				});
 			}
@@ -460,6 +461,27 @@ router.post("/sendMessage", function(req, res) {
 				};
 				db.collection('messages').insert(newLobby);
 				return res.json({status: "Lobby created with " + req.body.users.length + " others"});
+			}
+			else if(req.body.removeLobby)
+			{
+				let bodyChecks = [req.body.removeLobby, req.body._id];
+				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+				messages.findOne({_id: req.body._id}, (err, lobby) => {
+					if(err) throw err;
+
+					var found = false;
+					for(let i in lobby.Users)
+						if(req.session_state.user.username === lobby.Users[i])
+							found = true;
+					if(!found) return res.json({status: "You are not in this lobby"});
+
+					messages.deleteOne({_id: req.body._id}, (err, lobby) => {
+						if(err) throw err;
+
+						return res.json({status: "Deleted lobby"});
+					});
+				})
+
 			}
 		});
 	});
