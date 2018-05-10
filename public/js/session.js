@@ -12,6 +12,9 @@ $(document).ready(function() {
   $("#account").click(() => {
     window.location = window.location.href.split("/")[1] + "/account";
   });
+  $("#messages").click(() => {
+    window.location = window.location.href.split("/")[1] + "/lobbyFinder";
+  });
 
   //CART CLICK METHOD
   $("#cart").click(() => {

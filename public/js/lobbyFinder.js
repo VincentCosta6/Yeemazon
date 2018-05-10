@@ -1,7 +1,15 @@
 $(document).ready(() => {
   $.get("/userInfo", success);
   $.get("/myLobbies", (data) => {
-    console.log(data.lobbies);
+    for(let i in data.lobbies)
+    {
+      var string = "<li id = \"lob" + i + "\">" + data.lobbies[i].name + "(" + data.lobbies[i].messages.length + ")</li>";
+      $("#list").append(string);
+      $("#lob" + i).click(() => {
+        window.location = window.location.href.split("/")[1] + "/lobby?id=" + data.lobbies[i]._id;
+      });
+      console.log(window.location.href.split("/")[1] + "/lobby?id=" + data.lobbies[i]._id);
+    }
   })
   $("#createLobby").click(() => {
     var users = [];
@@ -10,7 +18,7 @@ $(document).ready(() => {
     for(let i in userArr)
       users.push(userArr[i]);
     console.log(users);
-    $.post("/sendMessage", {newLobby: "newLobby", users: users}, (data) => {
+    $.post("/sendMessage", {newLobby: "newLobby", users: users, name: $("#name").val()}, (data) => {
       alert(data.status);
     });
   });
