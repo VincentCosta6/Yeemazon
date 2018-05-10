@@ -40,7 +40,7 @@ $(document).ready(function() {
           }, (data) => {
             console.log("Clicked")
           });
-
+          console.log($("#addToCart"));
           //LOAD ITEM PAGE HTML
           state = 1;
           var divs = ["#sessionPageback"];
@@ -83,6 +83,7 @@ $(document).ready(function() {
             });
           });
         };
+
 
         //REMOVE FROM CART BUTTON CODE
         var remover = function() {
@@ -208,7 +209,6 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
       $("#holder").css("background-image", "url(" + data.item.link + ")");
       id = data.item._id;
     });
-
     //ADD TO CART BUTTON CODE
     $("#addToCart").click(() => {
       console.log("Here");
@@ -245,6 +245,14 @@ function loadSessionPage() {
         if (data.items[i2])
           appender(data.items[i2]._id, data.items[i2].link, data.items[i2].name, data.items[i2].price, data.items[i2].clicks, data.items[i2].usersClicked.length, data.appending);
       }
+      $("#addToCart").click(() => {
+        console.log("Here");
+        $.post("/addToCart", {
+          itemID: id
+        }, (data) => {
+          alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+        });
+      });
     });
   //
   // //LOAD FULL ITEM LIST

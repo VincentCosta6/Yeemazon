@@ -403,6 +403,7 @@ router.post("/itemClicked", function(req, res) {
 			}
 			product.save((err) => {
 				if(err) throw err;
+				return res.json({status: "Done"});
 			});
 		});
 	});
