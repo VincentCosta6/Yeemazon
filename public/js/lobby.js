@@ -31,6 +31,14 @@ $(document).ready(() => {
         alert(data.reason);
     });
   });
+  $("#leaveLobby").click(() => {
+
+    $.post("/sendMessage", {leaveLobby: "leaveLobby", _id: id}, (data) => {
+      console.log(data);
+      if(!data.passed)
+        alert(data.reason);
+    });
+  });
 
 
 

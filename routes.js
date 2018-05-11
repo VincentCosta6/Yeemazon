@@ -529,6 +529,15 @@ router.post("/sendMessage", function(req, res) {
 				})
 
 			}
+			else if(req.body.leaveLobby)
+			{
+				let bodyChecks = [req.body.leaveLobby, req.body._id];
+				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+				messages.update({_id: req.body._id}, {$pull: {Users: req.session_state.user.username}}, (err, lobby) => {
+					if(err) throw err;
+					return res.json({passed: true, reason: "Left lobby"});
+				})
+			}
 		});
 	});
 
