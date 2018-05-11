@@ -21,6 +21,7 @@ $(document).ready(() => {
       if(!data.passed)
         alert(data.reason);
     });
+    $("#list").append("<li id = \"Heyo\">" + (username + ":invited " + $("#user").val()) + "</li>");
   });
   $("#deleteLobby").click(() => {
 
