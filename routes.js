@@ -179,6 +179,9 @@ router.get("/requestPermission", function(req, res) {
 });
 
 router.get("/messageLength", function(req, res) {
+	let bodyChecks = [req.query._id];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
 		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
@@ -186,7 +189,37 @@ router.get("/messageLength", function(req, res) {
 	});
 });
 
+router.get("/messageChange", function(req, res) {
+	let bodyChecks = [req.query._id, req.query.length];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+	messages.findOne({_id: req.query._id}, (err, lobby) => {
+		if(err) throw err;
+		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
+
+		let found = false;
+		for(let i in lobby.Users)
+			if(lobby.Users[i] === req.session_state.user.username)
+				found = true;
+		if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
+
+		if(req.query.length == lobby.messages.length)
+			return res.json({upToDate:true});
+
+		let start = parseInt(req.query.length);
+		let length = (lobby.messages.length - parseInt(req.query.length)) + start;
+		let ret = [];
+		for(let i=start; i<length; i++) {
+			ret.push(lobby.messages[i]);
+		}
+		return res.json({upToDate: false, messages: ret});
+	});
+});
+
 router.get("/messages", function(req, res) {
+	let bodyChecks = [req.query._id, req.query.length, req.query.start];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
 		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
@@ -420,6 +453,8 @@ router.post("/sendEmail", function(req, res) {
 
 router.post("/sendMessage", function(req, res) {
 
+	if(!req.session_state.user) return res.json({status: "Howd you get here with an invalid key"});
+
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
 			if(err) throw err;
 			if(!user) return res.json({status:"You are not logged in"});
@@ -429,28 +464,38 @@ router.post("/sendMessage", function(req, res) {
 				let bodyChecks = [req.body.messageSent, req.body._id, req.body.message];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
+				let result = possibleXSSInArray(bodyChecks);
+				if(!result.passed) return res.json(result);
+
 				let toSend = req.session_state.user.username + ":" + req.body.message;
 				messages.update({_id:req.body._id}, {$push: {messages : toSend}}, function(err, lobby) {
 					if(err) throw err;
-					return res.json({status:"Delivered"});
+					return res.json({passed:true, reason:"Delivered"});
 				});
 			}
 			else if(req.body.inviteUser)
 			{
 				let bodyChecks = [req.body.inviteUser, req.body._id, req.body.invitee];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
-				var str = req.session_state.user.username + " has invited " + req.body.invitee;
+
+				let result = possibleXSSInArray(bodyChecks);
+				if(!result.passed) return res.json(result);
+
+				var str = req.session_state.user.username + ":invited " + req.body.invitee;
 				messages.update({_id:req.body._id}, {$push: {Users: req.body.invitee, messages: str}}, function(err, lobby){
 					if(err) throw err;
-					if(!lobby) res.json({status: "Lobby not found"});
+					if(!lobby) res.json({passed:false, reason: "Lobby not found"});
 
-					return res.json({status:"Invited"});
+					return res.json({passed:true, reason: "Invited"});
 				});
 			}
 			else if(req.body.newLobby)
 			{
 				let bodyChecks = [req.body.newLobby, req.body.users, req.body.name];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+				let result = possibleXSSInArray(bodyChecks);
+				if(!result.passed) return res.json(result);
 
 				let list = req.body.users;
 				let messages = [req.session_state.user.username + " has started a lobby"];
@@ -461,7 +506,7 @@ router.post("/sendMessage", function(req, res) {
 					name: name
 				};
 				db.collection('messages').insert(newLobby);
-				return res.json({status: "Lobby created with " + req.body.users.length + " others"});
+				return res.json({passed: true, reason: "Lobby created with " + req.body.users.length + " others"});
 			}
 			else if(req.body.removeLobby)
 			{
@@ -474,12 +519,12 @@ router.post("/sendMessage", function(req, res) {
 					for(let i in lobby.Users)
 						if(req.session_state.user.username === lobby.Users[i])
 							found = true;
-					if(!found) return res.json({status: "You are not in this lobby"});
+					if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
 
 					messages.deleteOne({_id: req.body._id}, (err, lobby) => {
 						if(err) throw err;
 
-						return res.json({status: "Deleted lobby"});
+						return res.json({passed: true, reason: "Deleted lobby"});
 					});
 				})
 
@@ -564,6 +609,10 @@ function arrayContainsXSSInjection(array) {
 			found = true;
 	return found;
 }
+function possibleXSSInArray(array)
+{
+	return (arrayContainsXSSInjection(array)) ? {passed: false, reason: "Possible XSS Injection found"} : {passed: true};
+}
 
 function requestContainsXSSInjection(req) {
 	return arrayContainsXSSInjection(JSON.parse(req.body));
@@ -582,12 +631,13 @@ function loginAttempt(req, res) {
 	let bodyChecks = [req.body.username, req.body.password];
 	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
+	let result = possibleXSSInArray(bodyChecks);
+	if(!result.passed) return res.json(result);
+
 	users.findOne({username:req.body.username}, (err, user) => {
 		if(err) throw err;
 
 		console.log("Login check for " + ip);
-
-		if(arrayContainsXSSInjection(bodyChecks)) return res.json({passed: false, reason: "A Parameter contains an XSS Injection Possibility"});
 
 		let status;
 		if(user)

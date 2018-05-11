@@ -10,7 +10,7 @@ $(document).ready(() => {
       });
       console.log(window.location.href.split("/")[1] + "/lobby?id=" + data.lobbies[i]._id);
     }
-  })
+  });
   $("#createLobby").click(() => {
     var users = [];
     users.push(username);
@@ -22,12 +22,6 @@ $(document).ready(() => {
     });
   });
 
-  $("#sendMessage").click(() => {
-
-    $.post("/sendMessage", {messageSent: "messageSent", users: allUsers, message: $("#message").val()}, (data) => {
-      alert(data.status);
-    });
-  });
 });
 
 

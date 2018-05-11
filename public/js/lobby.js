@@ -1,4 +1,4 @@
-var id, mlength = 0;
+var id, mlength = 0, refreshData, firstLoop = true;
 $(document).ready(() => {
   $.get("/userInfo", success);
   id = retreiveID(window.location.href);
@@ -7,61 +7,63 @@ $(document).ready(() => {
   $("#sendMessage").click(() => {
 
     $.post("/sendMessage", {messageSent: "messageSent", _id: id, message: $("#message").val()}, (data) => {
-      console.log(data.status);
+      console.log(data);
+      if(!data.passed) {
+        alert(data.reason);
+      }
     });
+    $("#list").append("<li id = \"Heyo\">" + (username + ":" + $("#message").val()) + "</li>");
   });
   $("#sendInvite").click(() => {
 
     $.post("/sendMessage", {inviteUser: "inviteUser", _id: id, invitee: $("#user").val()}, (data) => {
-      console.log(data.status);
+      console.log(data);
+      if(!data.passed)
+        alert(data.reason);
     });
   });
   $("#deleteLobby").click(() => {
 
     $.post("/sendMessage", {removeLobby: "removeLobby", _id: id}, (data) => {
-      console.log(data.status);
+      console.log(data);
+      if(!data.passed)
+        alert(data.reason);
     });
   });
 
 
 
-  var x = 1, keepGoing = true;
-  function refreshData()
+  var x = 1, keepGoing = true, allowed = false;
+  refreshData = function()
   {
-    $.get("/messageLength", {_id: id}, (data) => {
-      if(data.status) {
-        keepGoing = false;
-        alert(data.status);
-      }
-      else if(keepGoing && data.length != mlength)
-      {
-        $.get("/messages", {_id: id, start: (parseInt(mlength)), length: (parseInt(data.length) - parseInt(mlength))}, (data2) => {
-          mlength = parseInt(data.length);
-
-          for(let i in data2.messages)
-          {
-            $("#list").append("<li id = \"m" + i + "\">" + data2.messages[i] + "</li>");
-          }
-          window.scrollTo(0, document.body.scrollHeight);
-        });
-      }
-
+    $.get("/messageChange", {_id: id, length: mlength}, (data) => {
+      if(data.upToDate == true)
+        return;
+        for(let i in data.messages)
+        {
+          if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
+            $("#list").append("<li id = \"m" + i + "\">" + data.messages[i] + "</li>");
+        }
+        window.scrollTo(0, document.body.scrollHeight);
+        if(firstLoop)
+          firstLoop = false;
+        mlength = mlength + data.messages.length;
     });
+
     if(keepGoing)
       setTimeout(refreshData, x*1000);
   }
-  if(keepGoing)
-    refreshData();
 });
 
 
 let allUsers;
 let username;
 function success(data) {
-  if(data.redirect) window.location = window.location.href.split("/")[1] + data.redirect;
+  if(data.redirect) {window.location = window.location.href.split("/")[1] + data.redirect; return;}
 
   username = data.user.username;
   $("#userGreeting").html("Hello " + username);
+  refreshData();
 }
 function retreiveID(URL)
 {
