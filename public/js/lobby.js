@@ -46,17 +46,22 @@ $(document).ready(() => {
   refreshData = function()
   {
     $.get("/messageChange", {_id: id, length: mlength}, (data) => {
+      if(data.passed == false)
+      {
+        alert(data.reason);
+        window.location = window.location.href.split("/")[1] + "/lobbyFinder";
+      }
       if(data.upToDate == true)
         return;
-        for(let i in data.messages)
-        {
-          if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
-            $("#list").append("<li id = \"m" + i + "\">" + data.messages[i] + "</li>");
-        }
-        window.scrollTo(0, document.body.scrollHeight);
-        if(firstLoop)
-          firstLoop = false;
-        mlength = mlength + data.messages.length;
+      for(let i in data.messages)
+      {
+        if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
+          $("#list").append("<li id = \"m" + i + "\">" + data.messages[i] + "</li>");
+      }
+      window.scrollTo(0, document.body.scrollHeight);
+      if(firstLoop)
+        firstLoop = false;
+      mlength = mlength + data.messages.length;
     });
 
     if(keepGoing)

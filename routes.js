@@ -245,6 +245,25 @@ router.get("/myLobbies", (req, res) => {
 	});
 });
 
+router.get("/lobbyChange", function(req, res) {
+	let bodyChecks = [req.query.length];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+	messages.find({Users: req.session_state.user.username}, (err, lobbies) => {
+		if(err) throw err;
+		if(!lobbies) return res.json({status:"Couldnt find any lobbies, you arent in any"});
+
+		let ret = [];
+		for(let i in lobbies)
+			ret.push({_id: lobbies[i]._id, name: lobbies[i].name, length: lobbies[i].messages.length});
+
+		if(req.query.length != lobbies.length)
+			return res.json({upToDate: false, lobbies: ret});
+		else
+			return res.json({upToDate:true});
+	});
+});
+
 
 	////////////////////END OF GETTERS/////////////////////////////////////////////////////////////////////////////
 
@@ -533,10 +552,14 @@ router.post("/sendMessage", function(req, res) {
 			{
 				let bodyChecks = [req.body.leaveLobby, req.body._id];
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+				let str = req.session_state.user.username + " has left the lobby";
 				messages.update({_id: req.body._id}, {$pull: {Users: req.session_state.user.username}}, (err, lobby) => {
-					if(err) throw err;
-					return res.json({passed: true, reason: "Left lobby"});
-				})
+					messages.update({_id: req.body._id}, {$push: {messages: str}}, (err, lobby) => {
+						if(err) throw err;
+						return res.json({passed: true, reason: "Left lobby"});
+					});
+				});
 			}
 		});
 	});
