@@ -1,0 +1,27 @@
+- While in lobbyFinder and typing in the add users box, a popup will show with a list of users recommended to add
+
+- Linkable text in a lobby
+
+- New style for the lobbies and lobbyFinder
+
+- Send a message to the creator of an item
+
+- New messages notification
+
+- All new messages amount shown in messages toolbar
+
+- Uploadable pictures to items
+
+- More intuitive item CRUD page
+
+- Add more items
+
+- lobbyFinder and lobby need a working toolbar
+
+- Revert back to different html for each web page
+
+- Look into ReactJs
+
+- Consider implementing passport(probably not my personal passport is too integrated now)
+
+- Consider switching to CoinHive Proof of Work rather than ReCaptcha
