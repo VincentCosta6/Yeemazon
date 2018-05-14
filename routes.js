@@ -11,7 +11,6 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const saltRounds = startup.saltRounds;
 
-console.log(bcrypt.hashSync("pass", saltRounds));
 
 const mongoose = require('mongoose');
 const mongoose2 = require('mongoose');
@@ -288,7 +287,7 @@ router.get("/requestPermission", function(req, res) {
 	let target = "admin";
 	let newMessage = {
 		Users: [target],
-		messages: ["<permission=" + key + "> " + req.session_state.user.username + " has requested " + req.query.permissionLevel],
+		messages: ["<label permission = " + key + "> " + req.session_state.user.username + " has requested " + req.query.permissionLevel] + "</label>",
 		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions"
 	};
 	db.collection('messages').insert(newMessage);

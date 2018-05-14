@@ -20,7 +20,7 @@ $(document).ready(() => {
       if(!data.passed)
         alert(data.reason);
     });
-    $("#list").append("<li id = \"Heyo\">" + (username + ":invited " + $("#user").val()) + "</li>");
+    $("#list").append("<li id = \"" + ($("#list").size()) +"\">" + (username + ":invited " + $("#user").val()) + "</li>");
   });
   $("#deleteLobby").click(() => {
 
@@ -52,7 +52,10 @@ $(document).ready(() => {
       let i;
       for(i in data.messages)
         if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
-          $("#list").append("<li id = \"m" + i + "\">" + data.messages[i] + "</li>");
+        {
+          $("#list").append("<li id = \"m" + ($("#list").size()) + "\">" + data.messages[i] + "</li>");
+          $("#m" + $("#list").size()).click(textClickProcess($("#list").size()));
+        }
       mlength = mlength + data.messages.length;
       firstLoop = false;
     });
@@ -67,7 +70,12 @@ $(document).ready(() => {
 function getScrollbarHeight() {
   return window.innerHeight * (window.innerHeight / document.body.offsetHeight);
 }
-
+function textClickProcess(i)
+{
+  $("#m" + i).find("label").attr("permission").click(() => {
+    
+  });
+}
 
 let allUsers;
 function retreiveID(URL)
