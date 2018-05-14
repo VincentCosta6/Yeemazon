@@ -10,6 +10,9 @@ let messageSchema = mongoose.Schema({
 	}],
 	name: {
 		type: String
+	},
+	creator: {
+		type: String
 	}
 });
 

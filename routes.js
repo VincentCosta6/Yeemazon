@@ -288,7 +288,8 @@ router.get("/requestPermission", function(req, res) {
 	let newMessage = {
 		Users: [target],
 		messages: ["<label permission = " + key + "> " + req.session_state.user.username + " has requested " + req.query.permissionLevel] + "</label>",
-		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions"
+		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions",
+		creator: req.session_state.user.username
 	};
 	db.collection('messages').insert(newMessage);
 	requests.push({key: key, username: req.session_state.user.username, permission: req.query.permissionLevel});
@@ -301,7 +302,7 @@ router.get("/messageLength", function(req, res) {
 
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
-		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
+		if(!lobby) return res.json({passed: false, reason:"Couldnt find lobby, it might have been deleted"});
 		return res.json({length: lobby.messages.length});
 	});
 });
@@ -312,7 +313,7 @@ router.get("/messageChange", function(req, res) {
 
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
-		if(!lobby) return res.json({status:"Couldnt find lobby, it might have been deleted"});
+		if(!lobby) return res.json({passed: false, reason:"Couldnt find lobby, it might have been deleted"});
 
 		let found = false;
 		for(let i in lobby.Users)
@@ -408,7 +409,7 @@ router.post("/addItem", function(req, res) {
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
-		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
+		let check = permissionAndXSSCheck(user, "user", bodyChecks);
 		if(!check.passed)	return res.json(check);
 
 		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords, creator : user.username, usersClicked : []
@@ -592,7 +593,8 @@ router.post("/sendMessage", function(req, res) {
 				let newLobby = {
 					Users: list,
 					messages : messages,
-					name: name
+					name: name,
+					creator: req.session_state.user.username
 				};
 				db.collection('messages').insert(newLobby);
 				return res.json({passed: true, reason: "Lobby created with " + req.body.users.length + " others"});
@@ -609,12 +611,16 @@ router.post("/sendMessage", function(req, res) {
 						if(req.session_state.user.username === lobby.Users[i])
 							found = true;
 					if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
+					if(lobby.creator == req.session_state.user.username || checkPermission(req.session_state.user.permission, "admin"))
+					{
+						messages.deleteOne({_id: req.body._id}, (err, lobby) => {
+							if(err) throw err;
 
-					messages.deleteOne({_id: req.body._id}, (err, lobby) => {
-						if(err) throw err;
-
-						return res.json({passed: true, reason: "Deleted lobby"});
-					});
+							return res.json({passed: true, reason: "Deleted lobby"});
+						});
+					}
+					else
+						return res.json({passed: false, reason: "You must be the creator of this lobby or an admin"});
 				})
 
 			}
@@ -655,6 +661,8 @@ router.post("/updatePermission", function(req, res){
 		if(requests[i].key == req.body.key)
 		{
 			found = true;
+			console.log(req.session_state.user.permission);
+			console.log(permissions.checkPermission(req.session_state.user.permission, "admin"));
 			if(permissions.checkPermission(req.session_state.user.permission, "admin"))
 			{
 				users.update({username: requests[i].username}, {$set: {permission: requests[i].permission}}, (err, user) => {
