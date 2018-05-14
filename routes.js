@@ -278,7 +278,7 @@ router.get("/requestPermission", function(req, res) {
 			break;
 		}
 	if(!found) return res.json({passed: false, reason: "Permission does not exist"});
-	
+
 	let key = uuidv4();
 	let target = "admin";
 	let newMessage = {
@@ -639,6 +639,28 @@ router.post("/generateDevKey", function(req, res){
 		let newDevKey = {devKey:uuidv4()};
 		db.collection('devKeys').insert(newDevKey);
 	});
+});
+
+router.post("/updatePermission", function(req, res){
+	let found = false;
+	for(let i in requests)
+		if(requests[i].key == req.body.key)
+		{
+			found = true;
+			if(permissions.checkPermission(req.session_state.user.permission, "admin"))
+			{
+				users.update({username: requests[i].username}, {$set: {permission: requests[i].permission}}, (err, user) => {
+					if(err) throw err;
+					if(user.permission == requests[i].username)
+						return res.json({passed: true, reason: "Permission upgraded"});
+					else
+						return res.json({passed: false, reason: "Something went wrong"});
+				});
+			}
+			else
+				return res.json({passed: false, reason: "You cannot grant permissions"});
+		}
+	if(!found) return res.json({passed: false, reason: "Key not found"});
 });
 
 router.get("/updateSchema", function(req, res) {
