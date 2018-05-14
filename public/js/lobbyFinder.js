@@ -13,6 +13,16 @@ $(document).ready(() => {
     });
   });
 
+  $.get("/permissions", (data) => {
+    for(let i in data.permissions)
+      $("#perm").append("<option value=\"" + data.permissions[i] + "\">" + data.permissions[i] + "</option>");
+  });
+  $("#requestPermission").click(() => {
+    $.get("/requestPermission", {permissionLevel: $("#perm").val()}, (data) => {
+        alert(data.reason);
+    })
+  });
+
   var x = 3.5, keepGoing = true, allowed = false, mlength = 0;
   repeat = function() {
     $.get("/lobbyChange", {length: mlength}, (data) => {

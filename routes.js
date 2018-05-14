@@ -270,6 +270,9 @@ router.get("/verify", function(req, res){
 });
 
 router.get("/requestPermission", function(req, res) {
+	let bodyChecks = [req.query.permissionLevel];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
 	let found = false;
 	for(let i in perms)
 		if(req.query.permissionLevel == perms[i])
@@ -375,6 +378,10 @@ router.get("/lobbyChange", function(req, res) {
 		else
 			return res.json({upToDate:true});
 	});
+});
+
+router.get("/permissions", function(req, res) {
+	return res.json({permissions: perms});
 });
 
 
