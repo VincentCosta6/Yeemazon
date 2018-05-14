@@ -1,9 +1,9 @@
 function sendLogin()
 {
 	$.ajax({
-            url:"/login",
+            url:"/signup",
             type:"POST",
-            data: {username:$("#username").val(), password:$("#password").val(), ref:(window.location.href.split("/")[2])},
+            data: {username:$("#username").val(), email:$("#email").val(), password:$("#password").val(), captcha:$("#g-recaptcha-response").val()},
             success: redirect,
             dataType : "json"
         });
@@ -13,22 +13,23 @@ function redirect(data)
 	if(data.status)
 		alert(data.status);
 	else
-		window.location = window.location.href.split("/")[1] + data.redirect;
-}
-function sendSignup()
-{
-	window.location = window.location.href.split("/")[1] + "/signup";
+		window.location = window.location.href.split("/")[0] + data.redirect;
 }
 $(document).ready(function(){
 	$.get("/userInfo", success);
 	$("#request").click(sendLogin);
-	$("#signup").click(sendSignup);
+	//$("#former").on('submit', submitForm);
 
-	$('.loginInput').keypress(function(e){
+	$(document).keypress(function(e){
       if(e.keyCode==13)
       $('#request').click();
     });
 });
+function submitForm(e)
+{
+	e.preventDefault();
+
+}
 function success(data)
 {
 	if(!data.redirect)

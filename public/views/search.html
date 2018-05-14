@@ -2,10 +2,22 @@
 <html>
 
 <head>
-  <title>Yeemazon - Browse</title>
+  <title>Yeemazon - Search Results</title>
   <meta charset="utf-8" />
   <link rel="stylesheet" href="css/style.css">
   <style type="text/css">
+    h1 {
+      font-size: 102px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 14px;
+    }
+
     #request {
       border-radius: 2px;
       width: 50px;
@@ -31,26 +43,16 @@
     </div>
   </div>
 
-  <div id="sessionPageback">
-    <label >Create lobby with</label>
-    <input id = "users" type = "text" value = ""></input> <br><br>
-    <label >Name the lobby</label>
-    <input id = "name" type = "text" value = ""></input> <br><br>
-    <input id = "createLobby" class="toolbarButton" type = "button" value = "Create"></input> <br><br>
-
-    <ul id = "list">
-
-    </ul>
-    <label >Request permission</label>
-    <select id = "perm">
-
-    </select>
-    <input id = "requestPermission" class="toolbarButton" type = "button" value = "Request"></input> <br><br>
+  <div id="searchBack">
+    <h2 class="itemLabel" style="padding-top:30px">Search Results for {QUERY}</h2>
+    <div style="margin-top: 10px"></div>
+    <div class="searchHolder">
+    </div>
+    <h3>End of Search Results</h3>
   </div>
-  <script src="js/toolbar.js"></script>
-  <script src="js/userInfo.js"></script>
-  <script src = "js/lobbyFinder.js"></script>
 
+  <script src="js/toolbar.js"></script>
+  <script src="js/search.js"></script>
 </body>
 
 </html>
