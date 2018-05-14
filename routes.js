@@ -283,16 +283,18 @@ router.get("/requestPermission", function(req, res) {
 		}
 	if(!found) return res.json({passed: false, reason: "Permission does not exist"});
 
-	let key = uuidv4();
+	let key1 = uuidv4(), key2 = uuidv4();
 	let target = "admin";
 	let newMessage = {
 		Users: [target],
-		messages: ["<label permission = " + key + "> " + req.session_state.user.username + " has requested " + req.query.permissionLevel] + "</label>",
+		messages: ["<label permission = \"" + key1 + "\" style = \"cursor:pointer;\"> Click this to grant " + req.session_state.user.username + " " + req.query.permissionLevel + " permissions",
+							 "<label permission = \"" + key2 + "\" style = \"cursor:pointer;\"> Click this to reject " + req.session_state.user.username + " " + req.query.permissionLevel + " permissions"],
 		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions",
 		creator: req.session_state.user.username
 	};
 	db.collection('messages').insert(newMessage);
-	requests.push({key: key, username: req.session_state.user.username, permission: req.query.permissionLevel});
+	requests.push({key: key1, username: req.session_state.user.username, permission: req.query.permissionLevel, answer: true});
+	requests.push({key: key2, username: req.session_state.user.username, permission: req.session_state.user.permission, answer: false});
 	return res.json({passed: true, reason: "Requested " + req.query.permissionLevel + " to " + target});
 });
 
@@ -661,17 +663,20 @@ router.post("/updatePermission", function(req, res){
 		if(requests[i].key == req.body.key)
 		{
 			found = true;
-			console.log(req.session_state.user.permission);
-			console.log(permissions.checkPermission(req.session_state.user.permission, "admin"));
-			if(permissions.checkPermission(req.session_state.user.permission, "admin"))
-			{
-				users.update({username: requests[i].username}, {$set: {permission: requests[i].permission}}, (err, user) => {
-					if(err) throw err;
-					return res.json({passed: true, reason: "Permission upgraded"});
-				});
+			if(requests[i].answer == true) {
+				if(permissions.checkPermission(req.session_state.user.permission, "admin"))
+				{
+					users.update({username: requests[i].username}, {$set: {permission: requests[i].permission}}, (err, user) => {
+						if(err) throw err;
+						return res.json({passed: true, reason: "Permission upgraded"});
+					});
+				}
+				else
+					return res.json({passed: false, reason: "You cannot grant permissions"});
 			}
-			else
-				return res.json({passed: false, reason: "You cannot grant permissions"});
+			else {
+				return res.json({passed: true, reason: "Rejected upgrade"});
+			}
 		}
 	if(!found) return res.json({passed: false, reason: "Key not found"});
 });

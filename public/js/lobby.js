@@ -53,8 +53,8 @@ $(document).ready(() => {
       for(i in data.messages)
         if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
         {
-          $("#list").append("<li id = \"m" + ($("#list").size()) + "\">" + data.messages[i] + "</li>");
-          $("#m" + $("#list").size()).click(textClickProcess($("#list").size()));
+          $("#list").append("<li id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
+          $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size()));
         }
       mlength = mlength + data.messages.length;
       firstLoop = false;
