@@ -89,6 +89,69 @@ router.use(function (req, res, next) {
 	next();
 });
 
+
+//////////////////////////LOGIN SIGNUP STUFF///////////////////////////
+
+
+
+
+router.post("/login", loginAttempt);
+
+router.post("/signup", function(req, res){
+	let ip = getIP(req);
+
+	let bodyChecks = [req.body.username, req.body.password, req.body.email];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+	users.findOne({username:req.body.username}, (err, user) => {
+		if(err) throw err;
+
+
+
+		if(user !== null)
+			return res.json({success:false, status:"Username already exists"});
+		if(!req.body.captcha)
+			return res.json({success:false, status:"Please select captcha"});
+
+		const verify = `https://google.com/recaptcha/api/siteverify?secret=${startup.recaptchaKey}&response=${req.body.captcha}&remoteip=${ip}`;
+
+		request(verify, (err, response, body) => {
+			body = JSON.parse(body);
+			if(body.success !== undefined && !body.success)
+				return res.json({success:false, status:"Failed captcha"});
+		});
+
+		if(arrayContainsXSSInjection(bodyChecks)) return res.json({passed: false, reason: "A Parameter contains an XSS Injection Possibility"});
+
+		let sessionKey = uuidv4();
+
+		req.session_state.active = true;
+		req.session_state.key = sessionKey;
+
+		let hashed = bcrypt.hashSync(req.body.password, saltRounds);
+		let newUser = {
+			_id : new ObjectID(),
+			username : req.body.username,
+			email : req.body.email,
+			password : hashed,
+			permission : "user",
+			IPs : [ip],
+			Cart : [],
+			orders : [],
+			sessionKeys : [sessionKey]
+		}
+		req.session_state.user = newUser;
+		db.collection('users').insert(newUser);
+
+		return res.json({redirect: "/session"});
+	});
+});
+
+
+
+
+////////////////////////END OF LOGIN SIGNUP STUFF//////////////////////////////////////////////
+
 /////////////////////GETTERS////////////////////////////////////////////////////////
 router.get("/",handler);
 router.get("/login",handler);
@@ -98,12 +161,17 @@ function handler(req, res){
 	res.sendFile(__dirname + ("\\public\\views\\" + ((req.session_state.active) ? "session.html" : "login.html")));
 }
 
-let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "login", "lobby", "lobbyFinder"];
+let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "lobby", "lobbyFinder"];
 
 for(let i in getters)
 	router.get("/" + getters[i], function(req, res){
 		res.sendFile(__dirname + "\\public\\views\\" + getters[i] + ".html");
 	});
+
+
+router.use(function(req, res, next) {
+	next();
+});
 
 router.get("/itemInfo", function(req, res){
 	if(!req.query.id || req.query.id === "")
@@ -288,58 +356,7 @@ router.get("/lobbyChange", function(req, res) {
 
 
 //////////////////////POST REQUESTS////////////////////////////////////////////////////////////////////////////
-router.post("/login", loginAttempt);
 
-router.post("/signup", function(req, res){
-	let ip = getIP(req);
-
-	let bodyChecks = [req.body.username, req.body.password, req.body.email];
-	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
-
-	users.findOne({username:req.body.username}, (err, user) => {
-		if(err) throw err;
-
-
-
-		if(user !== null)
-			return res.json({success:false, status:"Username already exists"});
-		if(!req.body.captcha)
-			return res.json({success:false, status:"Please select captcha"});
-
-		const verify = `https://google.com/recaptcha/api/siteverify?secret=${startup.recaptchaKey}&response=${req.body.captcha}&remoteip=${ip}`;
-
-		request(verify, (err, response, body) => {
-			body = JSON.parse(body);
-			if(body.success !== undefined && !body.success)
-				return res.json({success:false, status:"Failed captcha"});
-		});
-
-		if(arrayContainsXSSInjection(bodyChecks)) return res.json({passed: false, reason: "A Parameter contains an XSS Injection Possibility"});
-
-		let sessionKey = uuidv4();
-
-		req.session_state.active = true;
-		req.session_state.key = sessionKey;
-
-
-		let hashed = bcrypt.hashSync(req.body.password, saltRounds);
-		let newUser = {
-			_id : new ObjectID(),
-			username : req.body.username,
-			email : req.body.email,
-			password : hashed,
-			permission : "user",
-			IPs : [ip],
-			Cart : [],
-			orders : [],
-			sessionKeys : [sessionKey]
-		}
-		req.session_state.user = newUser;
-		db.collection('users').insert(newUser);
-
-		return res.json({redirect: "/session"});
-	});
-});
 
 router.post("/logout", function(req, res){
 	users.update({username:req.session_state.user.username}, { $pull: { sessionKeys: req.session_state.key}}, (err) => {
