@@ -70,6 +70,25 @@ let verificationKeys = [];
 let tryers = [];
 let banned = [];
 
+
+
+
+
+
+router.use(function (req, res, next) {
+	var found = false;
+	for(let i in banned)
+		if(banned[i] == getIP(req))
+		{
+			found = true;
+			break;
+		}
+	if(found)
+		return res.json({status: "You are banned"});
+	else
+	next();
+});
+
 /////////////////////GETTERS////////////////////////////////////////////////////////
 router.get("/",handler);
 router.get("/login",handler);
