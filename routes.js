@@ -28,6 +28,8 @@ let users = require('./models/users');
 let devKeys = require('./models/devKeys');
 let messages = require('./models/messages');
 
+let version = require('./keyVersion').version;
+
 
 
 
@@ -86,7 +88,7 @@ router.use(function (req, res, next) {
 	if(found)
 		return res.json({status: "You are banned"});
 	else
-	next();
+		next();
 });
 
 
@@ -126,6 +128,7 @@ router.post("/signup", function(req, res){
 		let sessionKey = uuidv4();
 
 		req.session_state.active = true;
+		req.session_state.version = version;
 		req.session_state.key = sessionKey;
 
 		let hashed = bcrypt.hashSync(req.body.password, saltRounds);
@@ -169,9 +172,45 @@ for(let i in getters)
 	});
 
 
+	router.get("/userInfo",function(req,res) {
+		if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user || !req.session_state.user.username || req.session_state.version != version) {
+			req.session_state.reset();
+			console.log("Resetting session");
+			return res.json({redirect: "/"})
+		}
+		var ip = getIP(req);
+		users.findOne({username:req.session_state.user.username}, (err, user) => {
+			if(err) throw err;
+			var ipFound = false;
+			for(let i in user.IPs)
+				if(user.IPs[i] === ip) {
+					ipFound = true;
+					break;
+				}
+
+			var sessionFound = false;
+			for(let i in user.sessionKeys)
+				if(user.sessionKeys[i] === req.session_state.key)
+					sessionFound = true;
+			if(ipFound&&sessionFound)
+				return res.json({user:user});
+			else{
+				req.session_state.reset();
+				return res.json({redirect: "/"})
+			}
+		});
+	});
+
 router.use(function(req, res, next) {
+	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user || !req.session_state.user.username || req.session_state.version != version) {
+		req.session_state.reset();
+		console.log("Invalid session request");
+		return res.redirect("/login");
+	}
 	next();
 });
+
+
 
 router.get("/itemInfo", function(req, res){
 	if(!req.query.id || req.query.id === "")
@@ -207,32 +246,7 @@ router.get("/getItemInfo", function(req, res){
 });
 
 
-router.get("/userInfo",function(req,res){
-	if(!req.session_state || req.session_state.active === false || !req.session_state.key || !req.session_state.user || !req.session_state.user.username) {
-		req.session_state.reset();
-		console.log("Resetting session");
-		return res.json({redirect: "/"})
-	}
-	var ip = getIP(req);
-	users.findOne({username:req.session_state.user.username}, (err, user) => {
-		if(err) throw err;
-		var ipFound = false;
-		for(let i in user.IPs)
-			if(user.IPs[i] === ip)
-				ipFound = true;
 
-		var sessionFound = false;
-		for(let i in user.sessionKeys)
-			if(user.sessionKeys[i] === req.session_state.key)
-				sessionFound = true;
-		if(ipFound&&sessionFound)
-			return res.json({user:user});
-		else{
-			req.session_state.reset();
-			return res.json({redirect: "/"})
-		}
-	});
-});
 
 router.get("/cartItems", function(req, res){
 	users.findOne({username : req.session_state.user.username}, (err, user) => {
@@ -725,6 +739,7 @@ function loginAttempt(req, res) {
 			{
 				req.session_state.user = user;
 				req.session_state.active = true;
+				req.session_state.version = version;
 				var sessionKey = uuidv4();
 				req.session_state.key = sessionKey;
 				user.sessionKeys.push(sessionKey);
