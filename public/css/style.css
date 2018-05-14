@@ -1,6 +1,6 @@
 body {
   background-image: url('index.jpg');
-  background-size: cover no-repeat
+  background:cover;
 }
 
 label {
@@ -491,29 +491,37 @@ h3 {
 }
 
 @keyframes shrink {
-   from {
-     width: 95%;
-   }
-   to {
-     width:900px;
-   }
+  from {
+    width: 95%;
+  }
+  to {
+    width: 900px;
+  }
 }
 
 @keyframes grow {
-   from {
-     width: 900px;
-   }
-   to {
-     width:95%;
-   }
+  from {
+    width: 900px;
+  }
+  to {
+    width: 95%;
+  }
 }
 
 @keyframes slideAcross {
-    from {transform: translateX(0px);}
-    to {transform: translateX(465px);}
+  from {
+    transform: translateX(0px);
+  }
+  to {
+    transform: translateX(465px);
+  }
 }
 
 @keyframes slideBack {
-    from {transform: translateX(465px);}
-    to {transform: translateX(0px);}
+  from {
+    transform: translateX(465px);
+  }
+  to {
+    transform: translateX(0px);
+  }
 }
