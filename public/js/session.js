@@ -2,7 +2,6 @@
 var state = 0;
 
 $(document).ready(function() {
-  $.get("/userInfo", success);
   $("#logout").click(() => {
     $.post("/logout", (data) => {
       window.location = window.location.href.split("/")[1] + data.redirect;
@@ -222,12 +221,6 @@ function appender(id, link, name, price, clicks, uniqueClicks, which) {
 }
 var username, password;
 
-//USER DATA POPULATION FOR ALL PAGES
-function success(data) {
-  if(data.redirect) {window.location = window.location.href.split("/")[1] + data.redirect; return;}
-  $("#userGreeting").html("Hello " + data.user.username + "!");
-  $("#password").html(data.user.password);
-}
 
 //PAGE LOADING METHODS
 

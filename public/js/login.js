@@ -35,7 +35,6 @@ function sendBack() {
   $("#request").click(sendLogin);
 }
 $(document).ready(function() {
-  $.get("/userInfo", success);
   $("#signup").click(sendSignup);
   $(document).keypress(function(e) {
     if (e.keyCode == 13)
@@ -49,7 +48,7 @@ function submitForm(e) {
 }
 
 function success(data) {
-  
+
 }
 
 function signup() {

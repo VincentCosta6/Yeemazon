@@ -2,7 +2,6 @@ var id, mlength = 0, refreshData, firstLoop = true;
 $(document).ready(() => {
   firstLoop = true;
   console.log(firstLoop);
-  $.get("/userInfo", success);
   id = retreiveID(window.location.href);
 
 
@@ -63,6 +62,7 @@ $(document).ready(() => {
     if(keepGoing)
       setTimeout(refreshData, x*1000);
   }
+  refreshData();
 });
 function getScrollbarHeight() {
   return window.innerHeight * (window.innerHeight / document.body.offsetHeight);
@@ -70,14 +70,6 @@ function getScrollbarHeight() {
 
 
 let allUsers;
-let username;
-function success(data) {
-  if(data.redirect) {window.location = window.location.href.split("/")[1] + data.redirect; return;}
-
-  username = data.user.username;
-  $("#userGreeting").html("Hello " + username);
-  refreshData();
-}
 function retreiveID(URL)
 {
   var a = URL.split("id=")[1];
