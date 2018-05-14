@@ -22,6 +22,7 @@ function success(data) {
   }
   $("#username").html("Username: " + data.user.username);
   $("#email").html("Email: " + data.user.email);
+  $("#perm").html("Permission: " + capitalizeFirstLetter(data.user.permission));
 
   if (data.user.username === "admin") {
     var adminDiv = "<div id=\"adminBox\"><br><input type=\"text\" id=\"name\" value=\"Item Name\" class=\"adminInput\"></input><input type=\"text\" id=\"id\" value=\"Item ID\" class=\"adminInput\"></input><input type=\"text\" id=\"desc\" value=\"Item Description\" class=\"adminInput\"></input><input type=\"text\" id=\"price\" value=\"Item Price\" class=\"adminInput\"></input><input type=\"text\" id=\"key\" value=\"Key Words\" class=\"adminInput\"></input><input type=\"text\" id=\"url\" value=\"Item Picture URL\" class=\"adminInput\"></input><div style=\"margin-top: 30px\"></div><button id=\"add\" class=\"request\">Add Item</button><button id=\"change\" class=\"request\">Change Item by ID</button><button id=\"remove\" class=\"request\">Delete Item with ID</button><div style=\"margin-top: 20px\"></div></div>";
@@ -94,4 +95,7 @@ function success(data) {
 
 function itemCall(data) {
   alert(data.reason);
+}
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
