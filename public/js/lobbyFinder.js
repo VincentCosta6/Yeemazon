@@ -34,6 +34,3 @@ $(document).ready(() => {
   };
   repeat();
 });
-
-
-let allUsers;

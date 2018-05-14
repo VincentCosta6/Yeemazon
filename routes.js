@@ -30,9 +30,6 @@ let messages = require('./models/messages');
 
 let version = require('./keyVersion').version;
 
-
-
-
 db.once('open',function() {
 	console.log("Connected to remote db.");
 
@@ -71,6 +68,7 @@ let transporter = nodemailer.createTransport({
 let verificationKeys = [];
 let tryers = [];
 let banned = [];
+let requests = [];
 
 
 
@@ -272,11 +270,25 @@ router.get("/verify", function(req, res){
 });
 
 router.get("/requestPermission", function(req, res) {
-	if(!req.session_state || req.session_state.active === false || !req.query.permission || req.query.permission === "")
-		return res.json({error:"Field does not exist"});
-	user.findOne({username:req.session_state.user.username}, (err, user) => {
-			sendEmail(user.email, req.body.emailPass, "costa.vincent132@gmail.com", req.body.subject, user.username + " is requesting " + req.query.permission + " for their account");
-	});
+	let found = false;
+	for(let i in perms)
+		if(req.query.permissionLevel == perms[i])
+		{
+			found = true;
+			break;
+		}
+	if(!found) return res.json({passed: false, reason: "Permission does not exist"});
+	
+	let key = uuidv4();
+	let target = "admin";
+	let newMessage = {
+		Users: [target],
+		messages: ["<permission=" + key + "> " + req.session_state.user.username + " has requested " + req.query.permissionLevel],
+		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions"
+	};
+	db.collection('messages').insert(newMessage);
+	requests.push({key: key, username: req.session_state.user.username, permission: req.query.permissionLevel});
+	return res.json({passed: true, reason: "Requested " + req.query.permissionLevel + " to " + target});
 });
 
 router.get("/messageLength", function(req, res) {
