@@ -72,8 +72,17 @@ function getScrollbarHeight() {
 }
 function textClickProcess(i)
 {
-  $("#m" + i).find("label").attr("permission").click(() => {
-    
+  var key = $("#m" + i).find("label").attr("permission");
+  if(!key) return;
+
+  $("#m" + i).find("label").click(() => {
+    $.post("/updatePermission", {key: key}, (data) => {
+      alert(data.reason);
+      if(data.passed == true)
+        $.post("/sendMessage", {removeLobby: "removeLobby", _id: id}, (data) => {
+          window.location = window.location.href.split("/")[1] + "/lobbyFinder";
+        });
+    });
   });
 }
 

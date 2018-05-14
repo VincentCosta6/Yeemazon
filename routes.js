@@ -659,10 +659,7 @@ router.post("/updatePermission", function(req, res){
 			{
 				users.update({username: requests[i].username}, {$set: {permission: requests[i].permission}}, (err, user) => {
 					if(err) throw err;
-					if(user.permission == requests[i].username)
-						return res.json({passed: true, reason: "Permission upgraded"});
-					else
-						return res.json({passed: false, reason: "Something went wrong"});
+					return res.json({passed: true, reason: "Permission upgraded"});
 				});
 			}
 			else
