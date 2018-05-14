@@ -11,6 +11,8 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const saltRounds = startup.saltRounds;
 
+console.log(bcrypt.hashSync("pass", saltRounds));
+
 const mongoose = require('mongoose');
 const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
