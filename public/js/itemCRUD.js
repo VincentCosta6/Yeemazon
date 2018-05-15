@@ -30,15 +30,18 @@ $(document).ready(() => {
   $('#addf').on('submit', (function (e) {
     e.preventDefault();
     var formData = new FormData(this);
+    console.log($("#url").val());
     $.ajax({
             type: 'POST',
-            url:"/addItem",
+            url:"/fileUpload",
             data: formData,
             cache: false,
             contentType: false,
             processData: false,
             success: function (data) {
-                alert(data.reason);
+                $.post("/addItem", {name: $("#name").val(), description: $("#desc").val(), price: $("#price").val(), keywords: $("#key").val(), picName: data.key}, () => {
+                  alert(data.reason);
+                });
             },
             error: function (data) {
                 console.log(data.reason);

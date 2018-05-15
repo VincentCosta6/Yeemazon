@@ -32,14 +32,14 @@
       <label for="contactChoice2">Change Item</label>
     </div>
 
-    <form id = "addf">
+    <form id = "addf" action="/fileupload">
       <div id= "add">
         <input type="text" id="name" value="Item Name" class= "adminInput"></input><br>
         <!--<input type="text" id="id" value="Item ID" class= "adminInput "></input>-->
         <input type="text" id="desc" value="Item Description" class="adminInput"></input><br>
         <input type="text" id="price" value="Item Price" class="adminInput"></input><br>
         <input type="text" id="key" value="Key Words" class= "adminInput"></input><br>
-        <input type="file" id="url" value="Item Picture URL" class= "adminInput"></input><br>
+        <input type="file" id="url" name = "sample" class= "adminInput"></input><br>
         <div style= "margin-top: 100px "></div>
         <button id= "add " class= "request" type="submit">Add Item</button>
       <div style= "margin-top: 20px "></div></div>

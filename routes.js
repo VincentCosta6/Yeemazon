@@ -15,9 +15,8 @@ const saltRounds = startup.saltRounds;
 const mongoose = require('mongoose');
 const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
-const fileUpload = require('express-fileupload');
-const path = require('path');
-const fs = require('fs');
+var path = require('path');
+var fs = require('fs');
 
 let formidable = require('formidable');
 
@@ -414,43 +413,37 @@ router.post("/logout", function(req, res){
 	})
 });
 
+router.post("/fileUpload", function (req, res) {
+	if(!req.files.sample) return res.json({passed: false, reason: "You did not upload a file"});
+	let key = uuidv4();
+	let extend = req.files.sample.name.split(".")[1];
+	req.files.sample.mv(__dirname + "\\public\\images\\" + key + "." + extend, (err) => {
+		if(err) throw err;
+		else {
+			console.log("Upload");
+			return res.json({passed: true, reason: "File Uploaded", key: (key + "." + extend)});
+		}
+	});
+});
 
 router.post("/addItem", function(req, res) {
-	//let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
+	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords, req.body.picName];
 
-	//if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	var form = new formidable.IncomingForm();
-
-  form.parse(req);
-
-	let picObj = {};
-
-	form.on('fileBegin', function (name, file) {
-      file.path = __dirname + '/public/images/' + file.name;
-      picObj.picAdress = file.name;
-			console.log(file.name);
-  });
-	form.on('file', function (name, file) {
-      console.log('Saved ' + file.name);
-  });
-	form.on('end', function () {
-      console.log(picObj);
-  });
-	/*
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
 		let check = permissionAndXSSCheck(user, "user", bodyChecks);
 		if(!check.passed)	return res.json(check);
 
-		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/", keywords : req.body.keywords, creator : user.username, usersClicked : []
+		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/" + req.body.picName, keywords : req.body.keywords, creator : user.username, usersClicked : []
 
 		};
 		db.collection('products').insert(newItem);
 		return res.json({passed:true, reason:"Success"});
 
-	});*/
+	});
 
 });
 
