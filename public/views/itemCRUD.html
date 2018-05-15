@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <title>Yeemazon - Account</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/style.css">
+    <style type="text/css">
+      .request {
+        width: 200px;
+        height: 30px;
+        margin-bottom: 20px;
+      }
+
+      body {
+        background: cover;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  </head>
+  <body>
+    <h1 class="loginHeader">Yeemazon</h1>
+    <div style="margin-top: 20px"></div>
+    <h2 id="userGreeting" style="margin-left:2.5%">Hello {username}!</h2>
+    <div style="margin-top: 5px"></div>
+
+    <div id = "which">
+      <input type="radio" id="contactChoice1"
+       name="radioName" value="Add Item" checked>
+      <label for="contactChoice1">Add Item</label>
+
+      <input type="radio" id="contactChoice2"
+       name="radioName" value="changeItem">
+      <label for="contactChoice2">Change Item</label>
+    </div>
+
+    <form id = "addf">
+      <div id= "add">
+        <input type="text" id="name" value="Item Name" class= "adminInput"></input><br>
+        <!--<input type="text" id="id" value="Item ID" class= "adminInput "></input>-->
+        <input type="text" id="desc" value="Item Description" class="adminInput"></input><br>
+        <input type="text" id="price" value="Item Price" class="adminInput"></input><br>
+        <input type="text" id="key" value="Key Words" class= "adminInput"></input><br>
+        <input type="file" id="url" value="Item Picture URL" class= "adminInput"></input><br>
+        <div style= "margin-top: 100px "></div>
+        <button id= "add " class= "request" type="submit">Add Item</button>
+      <div style= "margin-top: 20px "></div></div>
+    </form>
+    <form id = "updatef">
+      <div id= "update">
+        <input type="text" id="IDSearch" value="SearchID" class= "adminInput"></input><button id= "change" class= "request">Find</button><br><br><br><br><br>
+        <input type="text" id="name2" value="Item Name" class= "adminInput"></input><br>
+        <input type="text" id="desc2" value="Item Description" class="adminInput"></input><br>
+        <input type="text" id="price2" value="Item Price" class="adminInput"></input><br>
+        <input type="text" id="key2" value="Key Words" class= "adminInput"></input><br>
+        <input type="file" id="url" value="Item Picture URL" class= "adminInput"></input><br>
+        <div style= "margin-top: 100px "></div>
+        <button id= "change " class= "request">Change Item</button><br>
+        <button id= "remove " class= "request">Delete Item</button><br>
+      <div style= "margin-top: 20px "></div></div>
+    </form>
+    <script src="js/toolbar.js"></script>
+    <script src="js/userInfo.js"></script>
+    <script src="js/itemCRUD.js"></script>
+  </body>
+</html>

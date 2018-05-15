@@ -19,6 +19,8 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 
+let formidable = require('formidable');
+
 const perms = ["viewer", "user", "moderator", "admin"];
 const permissions = new (require('./modules/permissions')) (perms);
 
@@ -165,7 +167,7 @@ function handler(req, res){
 	res.sendFile(__dirname + ("\\public\\views\\" + ((req.session_state.active) ? "session.html" : "login.html")));
 }
 
-let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "lobby", "lobbyFinder"];
+let getters = ["account", "item", "cart", "orders", "admin", "search", "signup", "lobby", "lobbyFinder", "itemCRUD"];
 
 for(let i in getters)
 	router.get("/" + getters[i], function(req, res){
@@ -414,9 +416,28 @@ router.post("/logout", function(req, res){
 
 
 router.post("/addItem", function(req, res) {
-	let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
+	//let bodyChecks = [req.body.name, req.body.description, req.body.price, req.body.keywords];
 
-	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+	//if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+	var form = new formidable.IncomingForm();
+
+  form.parse(req);
+
+	let picObj = {};
+
+	form.on('fileBegin', function (name, file) {
+      file.path = __dirname + '/public/images/' + file.name;
+      picObj.picAdress = file.name;
+			console.log(file.name);
+  });
+	form.on('file', function (name, file) {
+      console.log('Saved ' + file.name);
+  });
+	form.on('end', function () {
+      console.log(picObj);
+  });
+	/*
 	users.findOne({username:req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 
@@ -429,7 +450,7 @@ router.post("/addItem", function(req, res) {
 		db.collection('products').insert(newItem);
 		return res.json({passed:true, reason:"Success"});
 
-	});
+	});*/
 
 });
 
@@ -683,7 +704,7 @@ router.post("/generateDevKey", function(req, res){
 	});
 });
 
-router.post("/updatePermission", function(req, res){
+router.post("/updatePermission", function(req, res) {
 	let found = false;
 	for(let i in requests)
 		if(requests[i].key == req.body.key)
