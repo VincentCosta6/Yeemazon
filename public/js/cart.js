@@ -13,15 +13,26 @@ $(document).ready(function(){
 	$("#account").click(() => {
 		window.location = window.location.href.split("/")[1] + "/account";
 	});
+	$("#order").click(() => {
+		for(let i in itemIDs)
+			numPer[i] = $("#a" + itemIDs[i]).val();
+		$.post("/orderItems", {itemIDs: itemIDs, orderAmounts: numPer}, (data) => {
+			alert(data.reason);
+			$(".orderHolder").empty();
+			$(".itemLabel").html("Your cart has " + (lengther = 0) + " items");
+		});
+	});
 
 	$.get("/cartItems", function(data){
 		for(var i = 0; i < data.items.length; i++) {
 
 			let id = data.items[i]._id;
-			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \""+ id + "remover\" style = \"cursor:pointer;\">Remove</label></div>";
+			itemIDs[i] = id;
+			numPer[i] = 1;
+			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \""+ id + "remover\" style = \"cursor:pointer;\">Remove</label><br><input id = \"a" + id + "\"type = \"number\" min = \"1\" max = \"10\" value = \"1\"></div>";
 			$(".orderHolder").append(divCreator);
 			var redirect = function(){window.location = window.location.href.split("/")[1] + "/item?id=" + id};
-			var remover = function(){$.post("/removeFromCart", {itemID : id}, (data) => {$("#" + id).remove();alert("Successful removal");})};
+			var remover = function(){$.post("/removeFromCart", {itemID : id}, (data) => {$("#" + id).remove();$(".itemLabel").html("Your cart has " + --lengther + " items");alert("Successful removal");})};
 			$("#" + id + "imger").click(redirect);
 			$("#" + id + "remover").click(remover);
 		}
@@ -36,3 +47,5 @@ $(document).ready(function(){
 	});
 });
 var lengther;
+var itemIDs = [];
+var numPer = [];

@@ -656,7 +656,7 @@ router.post("/sendMessage", function(req, res) {
 
 router.post("/requestDevKey", function(req, res){
 
-})
+});
 router.post("/generateDevKey", function(req, res){
 	users.findOne({username:req.session_state.username}, (err, user) => {
 		if(err) throw err;
@@ -698,6 +698,25 @@ router.post("/updatePermission", function(req, res){
 			}
 		}
 	if(!found) return res.json({passed: false, reason: "Key not found"});
+});
+
+router.post("/orderItems", function(req, res){
+	let bodyChecks = [req.body.itemIDs, req.body.orderAmounts];
+	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
+
+	products.find({_id:req.body.itemIDs}, (err, products) => {
+		if(err) throw err;
+		for(let i in products) {
+			products[i].numOrders += parseInt(req.body.orderAmounts[i]);
+			products[i].save((err) => {
+				if(err) throw err;
+			});
+		}
+		users.update({username: req.session_state.user.username}, {$set: {Cart: []}}, (err, user) => {
+			if(err) throw err;
+			return res.json({passed: true, reason: "Items ordered"});
+		});
+	});
 });
 
 router.get("/updateSchema", function(req, res) {
