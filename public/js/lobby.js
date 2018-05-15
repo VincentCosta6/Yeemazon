@@ -1,4 +1,4 @@
-var id, mlength = 0, refreshData, firstLoop = true;
+var id, mlength = 0, refreshData, firstLoop = true, go = true;
 $(document).ready(() => {
   firstLoop = true;
   console.log(firstLoop);
@@ -41,27 +41,30 @@ $(document).ready(() => {
   var x = 1, keepGoing = true, allowed = false;
   refreshData = function()
   {
-    $.get("/messageChange", {_id: id, length: mlength}, (data) => {
-      if(data.passed == false)
-      {
-        alert(data.reason);
-        window.location = window.location.href.split("/")[1] + "/lobbyFinder";
-      }
-      if(data.upToDate == true)
-        return;
-      let i;
-      for(i in data.messages)
-        if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
+    if(go)
+    {
+      $.get("/messageChange", {_id: id, length: mlength}, (data) => {
+        if(data.passed == false)
         {
-          $("#list").append("<li id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
-          $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size() + i));
+          alert(data.reason);
+          window.location = window.location.href.split("/")[1] + "/lobbyFinder";
         }
-      mlength = mlength + data.messages.length;
-      firstLoop = false;
-    });
-    console.log(getScrollbarHeight());
-    if($(window).scrollTop() + getScrollbarHeight() >= $(window).height())
-      window.scrollTo(0, document.body.scrollHeight);
+        if(data.upToDate == true)
+          return;
+        let i;
+        for(i in data.messages)
+          if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
+          {
+            $("#list").append("<li id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
+            $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size() + i));
+          }
+        mlength = mlength + data.messages.length;
+        firstLoop = false;
+      });
+      console.log(getScrollbarHeight());
+      if($(window).scrollTop() + getScrollbarHeight() >= $(window).height())
+        window.scrollTo(0, document.body.scrollHeight);
+    }
     if(keepGoing)
       setTimeout(refreshData, x*1000);
   }
@@ -95,3 +98,10 @@ function retreiveID(URL)
   var b = a.split("&")[0];
   return b
 }
+$(window).focus(function() {
+    go = true;
+});
+
+$(window).blur(function() {
+    go = false;
+});

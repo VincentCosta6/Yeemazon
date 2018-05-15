@@ -625,7 +625,7 @@ router.post("/sendMessage", function(req, res) {
 						if(req.session_state.user.username === lobby.Users[i])
 							found = true;
 					if(!found) return res.json({passed: false, reason: "You are not in this lobby"});
-					if(lobby.creator == req.session_state.user.username || checkPermission(req.session_state.user.permission, "admin"))
+					if(lobby.creator == req.session_state.user.username || permissions.checkPermission(req.session_state.user.permission, "admin"))
 					{
 						messages.deleteOne({_id: req.body._id}, (err, lobby) => {
 							if(err) throw err;
