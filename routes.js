@@ -15,6 +15,7 @@ const saltRounds = startup.saltRounds;
 const mongoose = require('mongoose');
 const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
+const validd = require('mongoose').Types.ObjectId;
 var path = require('path');
 var fs = require('fs');
 
@@ -224,9 +225,10 @@ router.get("/itemInfo", function(req, res){
 });
 
 router.get("/findItem", function(req, res){
-	if(!req.query._id || req.query._id !== "")
+	if(!validd.isValid(req.query._id)) return res.json({failed: "Not found"});
 	products.findOne({_id:req.query._id},function(err,product){
 		if (err) throw err;
+		if(!product) return res.json({failed: "Not found"});
 		return res.json({item:product});
 	});
 });
@@ -234,6 +236,13 @@ router.get("/findItem", function(req, res){
 router.get("/findItems", function(req, res){
 	if(!req.query.keywords || req.query.keywords !== [])
 	products.find({keywords:req.query.keywords},function(err,products){
+		if (err) throw err;
+		return res.json({items:products, appending : req.query.appending});
+	});
+});
+
+router.get("/allItems", function(req, res){
+	products.find({},function(err,products){
 		if (err) throw err;
 		return res.json({items:products, appending : req.query.appending});
 	});

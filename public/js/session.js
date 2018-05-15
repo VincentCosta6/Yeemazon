@@ -15,8 +15,8 @@ $(document).ready(function() {
         });
 
       //LOAD FULL ITEM LIST
-      $.get("/findItems", {
-          keywords: "cool"
+      $.get("/allItems", {
+
         }, function(data) {
           for (let i = 0; i < data.items.length; i++)
             if (data.items[i])
