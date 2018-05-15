@@ -22,7 +22,9 @@ $(document).ready(function() {
             if (data.items[i])
               appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
 
-          //TODO - SCALE PAGE BACKING FOR NUMBER OF ITEMS
+          //TODO - SCALE PAGE BACKING FOR NUMBER OF ITE		$(".orderHolder").css("height", 230 * (Math.floor((data.items.length/6)) + 1));
+          $("#sessionPageback").css("height", 1050 + (230 * (Math.floor((data.items.length/6)) + 1)));
+          $("#items4").css("height", 230 * (Math.floor((data.items.length/6)) + 1));
         });
       });
 

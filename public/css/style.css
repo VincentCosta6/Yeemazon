@@ -186,7 +186,7 @@ h3 {
 #toolbar {
   margin: 0 auto;
   background: rgba(20, 20, 20, 0.9);
-  width: 95%;
+  width: 75%;
   height: 40px;
   border-radius: 10px;
   text-align: center;
@@ -253,7 +253,7 @@ h3 {
 #sessionPageback {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.7);
-  width: 95%;
+  width: 75%;
   height: 920px;
   border-radius: 10px;
   text-align: center;
@@ -323,7 +323,7 @@ h3 {
 #ordersPageback {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.7);
-  width: 95%;
+  width: 75%;
   height: 500px;
   border-radius: 10px;
   text-align: center;
@@ -335,7 +335,7 @@ h3 {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.7);
   width: 900px;
-  height: 500px;
+  height: 515px;
   border-radius: 10px;
   text-align: center;
   position: relative;
@@ -366,7 +366,7 @@ h3 {
 
 .infoHolder {
   width: 340px;
-  height: 350px;
+  height: 310px;
   background-color: rgba(0, 0, 0, 0.5);
   margin-left: 105%;
   text-align: left;
@@ -393,7 +393,7 @@ h3 {
   font-size: 30px;
   font-family: "tahoma";
   font-weight: bold;
-  text-shadow: 3px 3px 6px #000000;
+  text-shadow: 1px 1px 1px #000000;
   transition: .3s;
   margin-right: 10px
 }
@@ -449,7 +449,7 @@ h3 {
 #searchBack {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.7);
-  width: 95%;
+  width: 75%;
   height: 510px;
   border-radius: 10px;
   text-align: center;
@@ -468,6 +468,10 @@ h3 {
   border-radius: 10px;
   position: relative;
   animation: flyInFromTop 1s 1 ease;
+}
+
+#list {
+  
 }
 
 /* ANIMATIONS */
