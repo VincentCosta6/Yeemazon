@@ -29,6 +29,7 @@ $(document).ready(function(){
 			let id = data.items[i]._id;
 			itemIDs[i] = id;
 			numPer[i] = 1;
+			costs[i] = parseFloat(data.items[i].price);
 			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \""+ id + "remover\" style = \"cursor:pointer;\">Remove</label><br><input id = \"a" + id + "\"type = \"number\" min = \"1\" max = \"10\" value = \"1\"></div>";
 			$(".orderHolder").append(divCreator);
 			var redirect = function(){window.location = window.location.href.split("/")[1] + "/item?id=" + id};
@@ -44,8 +45,19 @@ $(document).ready(function(){
 		//update search list size to show user
 		$(".itemLabel").html("Your cart has " + data.items.length + " items");
 		lengther = data.items.length;
+		updateCost();
 	});
 });
+document.onkeypress = updateCost;
+document.onclick = updateCost;
+function updateCost()
+{
+	var total = 0;
+	for(let i in itemIDs)
+		total += costs[i] * parseInt($("#a" + itemIDs[i]).val());
+	$("#order").html("Order $" + total.toFixed(2));
+}
 var lengther;
 var itemIDs = [];
 var numPer = [];
+var costs = [];
