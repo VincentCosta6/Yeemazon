@@ -21,6 +21,11 @@ $(document).ready(function(){
 				send1.push(numPer[i]);
 			}
 		for(let i in itemIDs)
+			if($("#a" + itemIDs[i]).val()) {
+				numPer[i] = $("#a" + itemIDs[i]).val();
+				send1.push(numPer[i]);
+			}
+		for(let i in itemIDs)
 			numPer[i] = $("#a" + itemIDs[i]).val();
 		$.post("/orderItems", {itemIDs: itemIDs, orderAmounts: numPer}, (data) => {
 			alert(data.reason);

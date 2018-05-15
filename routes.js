@@ -601,6 +601,8 @@ router.post("/sendMessage", function(req, res) {
 				let list = req.body.users;
 				let messages = [req.session_state.user.username + " has started a lobby"];
 				let name = req.body.name;
+				if(name == "Global Lobby") return res.json({passed: false, reason: "You arent allowed to name the lobby this"});
+
 				let newLobby = {
 					Users: list,
 					messages : messages,
@@ -608,7 +610,7 @@ router.post("/sendMessage", function(req, res) {
 					creator: req.session_state.user.username
 				};
 				db.collection('messages').insert(newLobby);
-				return res.json({passed: true, reason: "Lobby created with " + req.body.users.length + " others"});
+				return res.json({passed: true, reason: "Lobby created with " + (req.body.users.length - 1) + " others"});
 			}
 			else if(req.body.removeLobby)
 			{
@@ -616,6 +618,7 @@ router.post("/sendMessage", function(req, res) {
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 				messages.findOne({_id: req.body._id}, (err, lobby) => {
 					if(err) throw err;
+					if(lobby.name == "Global Lobby") return res.json({passed: false, reason: "You arent allowed to delete the global lobby"});
 
 					var found = false;
 					for(let i in lobby.Users)
@@ -642,6 +645,8 @@ router.post("/sendMessage", function(req, res) {
 
 				let str = req.session_state.user.username + " has left the lobby";
 				messages.findOne({_id:req.body._id}, (err, lobby) => {
+					if(lobby.name == "Global Lobby") return res.json({passed: false, reason: "You arent allowed to leave the global lobby"});
+
 					if(lobby.Users.length == 1)
 					{
 						messages.deleteOne({_id: lobby._id}, (err, lobby) => {

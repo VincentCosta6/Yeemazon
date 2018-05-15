@@ -1,4 +1,4 @@
-var id;
+var id, creator2, name;
 $(document).ready(function() {
   $.get("/userInfo", success);
 
@@ -7,7 +7,8 @@ $(document).ready(function() {
     _id: id
   }, (data) => {
     data.item = data.item[0];
-    $("#name").html("Yeemazon Official " + data.item.name);
+    name = data.item.name;
+    $("#name").html("Yeemazon Official " + name);
     $(document).prop('title', 'Yeemazon - ' + data.item.name);
     $("#itemPrice").html("$" + data.item.price);
     $("#shipping").html(" + $" + Math.floor(data.item.price/10) + ".99 shipping");
@@ -16,6 +17,8 @@ $(document).ready(function() {
     $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);
     $("#itemOrders").html("Ordered: " + data.item.numOrders);
     $("#itemID").html("Item ID: " + data.item._id);
+    creator2 = data.item.creator;
+    $("#creator").html("Creator: " + creator2);
     $("#holder").css("background-image", "url(" + data.item.link + ")");
     id = data.item._id;
   });
@@ -41,16 +44,17 @@ $(document).ready(function() {
       alert(((data.status) ? "Item added to cart" : "Something went wrong"));
     });
   });
+  $("#msg").click(() => {
+    $.post("/sendMessage", {
+      newLobby: "newLobby",
+      users: [username, creator2],
+      name: username + " has a question on item " + name
+    }, (data) => {
+      alert(data.reason);
+    });
+  });
 });
 
-function success(data) {
-  if (data.redirect === "/") {
-    window.location = window.location.href.split("/")[1] + "/";
-    return;
-  }
-  $("#userGreeting").html("Hello " + data.user.username + "!");
-  $("#password").html(data.user.password);
-}
 
 function retID(WINDOWURL) {
   var rightSide = WINDOWURL.split("?")[1];
