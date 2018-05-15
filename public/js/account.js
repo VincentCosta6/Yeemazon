@@ -2,7 +2,7 @@ $(document).ready(function() {
   $.get("/userInfo", success);
   $.get("/permissions", (data) => {
     for(let i in data.permissions)
-      $("#perm2").append("<option value=\"" + data.permissions[i] + "\">" + data.permissions[i] + "</option>");
+      $("#perm2").append("<option value=\"" + data.permissions[i] + "\">" + capitalizeFirstLetter(data.permissions[i]) + "</option>");
   });
   $("#requestPermission").click(() => {
     $.get("/requestPermission", {permissionLevel: $("#perm2").val()}, (data) => {

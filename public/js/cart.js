@@ -14,6 +14,12 @@ $(document).ready(function(){
 		window.location = window.location.href.split("/")[1] + "/account";
 	});
 	$("#order").click(() => {
+		let send1 = [], send2 = [];
+		for(let i in itemIDs)
+			if($("#a" + itemIDs[i]).val()) {
+				numPer[i] = $("#a" + itemIDs[i]).val();
+				send1.push(numPer[i]);
+			}
 		for(let i in itemIDs)
 			numPer[i] = $("#a" + itemIDs[i]).val();
 		$.post("/orderItems", {itemIDs: itemIDs, orderAmounts: numPer}, (data) => {
@@ -33,7 +39,7 @@ $(document).ready(function(){
 			var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img id = \"" + id + "imger" + "\"src=\"" + data.items[i].link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label><br><label id = \""+ id + "remover\" style = \"cursor:pointer;\">Remove</label><br><input id = \"a" + id + "\"type = \"number\" min = \"1\" max = \"10\" value = \"1\"></div>";
 			$(".orderHolder").append(divCreator);
 			var redirect = function(){window.location = window.location.href.split("/")[1] + "/item?id=" + id};
-			var remover = function(){$.post("/removeFromCart", {itemID : id}, (data) => {$("#" + id).remove();$(".itemLabel").html("Your cart has " + --lengther + " items");alert("Successful removal");})};
+			var remover = function(){$.post("/removeFromCart", {itemID : id}, (data) => {$("#" + id).remove();$(".itemLabel").html("Your cart has " + --lengther + " items");updateCost();alert("Successful removal");})};
 			$("#" + id + "imger").click(redirect);
 			$("#" + id + "remover").click(remover);
 		}
@@ -54,7 +60,8 @@ function updateCost()
 {
 	var total = 0;
 	for(let i in itemIDs)
-		total += costs[i] * parseInt($("#a" + itemIDs[i]).val());
+		if($("#a" + itemIDs[i]).val())
+			total += costs[i] * parseInt($("#a" + itemIDs[i]).val());
 	$("#order").html("Order $" + total.toFixed(2));
 }
 var lengther;

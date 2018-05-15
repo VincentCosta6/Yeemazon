@@ -144,7 +144,9 @@ router.post("/signup", function(req, res){
 		}
 		req.session_state.user = newUser;
 		db.collection('users').insert(newUser);
-
+		messages.update({name: "Global Lobby"}, {$push: {Users: req.body.username, messages: req.body.username + " has joined Yeemazon"}}, (err, use) => {
+			if(err) throw err;
+		});
 		return res.json({redirect: "/session"});
 	});
 });
@@ -392,18 +394,6 @@ router.get("/myOrders", function(req, res) {
 	users.findOne({username: req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
 		return res.json({string: user.orders});
-		let orders = user.orders.split("/");
-		for(let i in orders)
-		{
-			let items = orders[i].split(",");
-			for(let i2 in items)
-			{
-				let vars = items[i].split(":");
-				let amount = vars[0];
-				let id = vars[1];
-
-			}
-		}
 	});
 });
 
@@ -746,20 +736,18 @@ router.post("/orderItems", function(req, res){
 
 router.get("/updateSchema", function(req, res) {
 	users.find({}, (err, users) => {
+		let names = [];
 		for(let i in users)
-		{
-			if(!users[i].permission)
-			{
-				users[i].permission = (users[i].username === "admin") ? "admin" : "user";
-
-				users[i].save((err) => {
-					if(err) console.log(err);
-					else console.log("User updated: " + users[i]._id);
-				});
-			}
-		}
-
+			names.push(users[i].username);
+		let newLobby = {
+			Users: names,
+			messages : ["Global lobby started"],
+			name: "Global Lobby",
+			creator: "admin"
+		};
+		db.collection('messages').insert(newLobby);
 	});
+
 });
 
 //////////////////////////END OF POST REQUESTS//////////////////////////////
