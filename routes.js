@@ -388,6 +388,25 @@ router.get("/permissions", function(req, res) {
 	return res.json({permissions: perms});
 });
 
+router.get("/myOrders", function(req, res) {
+	users.findOne({username: req.session_state.user.username}, (err, user) => {
+		if(err) throw err;
+		return res.json({string: user.orders});
+		let orders = user.orders.split("/");
+		for(let i in orders)
+		{
+			let items = orders[i].split(",");
+			for(let i2 in items)
+			{
+				let vars = items[i].split(":");
+				let amount = vars[0];
+				let id = vars[1];
+
+			}
+		}
+	});
+});
+
 
 	////////////////////END OF GETTERS/////////////////////////////////////////////////////////////////////////////
 
@@ -706,15 +725,21 @@ router.post("/orderItems", function(req, res){
 
 	products.find({_id:req.body.itemIDs}, (err, products) => {
 		if(err) throw err;
+		let str = "";
 		for(let i in products) {
 			products[i].numOrders += parseInt(req.body.orderAmounts[i]);
+			str += parseInt(req.body.orderAmounts[i]) + ":" + products[i]._id + ",";
 			products[i].save((err) => {
 				if(err) throw err;
 			});
 		}
+		str += "/";
 		users.update({username: req.session_state.user.username}, {$set: {Cart: []}}, (err, user) => {
 			if(err) throw err;
-			return res.json({passed: true, reason: "Items ordered"});
+			users.update({username: req.session_state.user.username}, {$push: {orders: str}}, (err, user) => {
+				if(err) throw err;
+				return res.json({passed: true, reason: "Items ordered"});
+			});
 		});
 	});
 });
