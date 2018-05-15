@@ -632,11 +632,23 @@ router.post("/sendMessage", function(req, res) {
 				if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
 				let str = req.session_state.user.username + " has left the lobby";
-				messages.update({_id: req.body._id}, {$pull: {Users: req.session_state.user.username}}, (err, lobby) => {
-					messages.update({_id: req.body._id}, {$push: {messages: str}}, (err, lobby) => {
-						if(err) throw err;
-						return res.json({passed: true, reason: "Left lobby"});
-					});
+				messages.findOne({_id:req.body._id}, (err, lobby) => {
+					if(lobby.Users.length == 1)
+					{
+						messages.deleteOne({_id: lobby._id}, (err, lobby) => {
+							if(err) throw err;
+							return res.json({passed: true, reason: "Deleted lobby"});
+						});
+					}
+					else
+					{
+						messages.update({_id: req.body._id}, {$pull: {Users: req.session_state.user.username}}, (err, lobby) => {
+							messages.update({_id: req.body._id}, {$push: {messages: str}}, (err, lobby) => {
+								if(err) throw err;
+								return res.json({passed: true, reason: "Left lobby"});
+							});
+						});
+					}
 				});
 			}
 		});
@@ -675,6 +687,13 @@ router.post("/updatePermission", function(req, res){
 					return res.json({passed: false, reason: "You cannot grant permissions"});
 			}
 			else {
+				let newMessage = {
+					Users: [requests[i].username],
+					messages: [req.session_state.user.username + " has rejected your promotion"],
+					name: req.session_state.user.username + " has rejected your promotion",
+					creator: requests[i].username
+				};
+				db.collection('messages').insert(newMessage);
 				return res.json({passed: true, reason: "Rejected upgrade"});
 			}
 		}

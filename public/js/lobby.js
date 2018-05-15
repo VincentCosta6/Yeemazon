@@ -54,7 +54,7 @@ $(document).ready(() => {
         if(firstLoop || (!(data.messages[i].split(":")[0] == username)))
         {
           $("#list").append("<li id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
-          $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size()));
+          $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size() + i));
         }
       mlength = mlength + data.messages.length;
       firstLoop = false;
@@ -72,8 +72,10 @@ function getScrollbarHeight() {
 }
 function textClickProcess(i)
 {
+  console.log("I " + i);
   var key = $("#m" + i).find("label").attr("permission");
   if(!key) return;
+  console.log("Key " + key);
 
   $("#m" + i).find("label").click(() => {
     $.post("/updatePermission", {key: key}, (data) => {

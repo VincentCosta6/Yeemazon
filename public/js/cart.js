@@ -32,16 +32,7 @@ $(document).ready(function(){
 
 		//update search list size to show user
 		$(".itemLabel").html("Your cart has " + data.items.length + " items");
-
+		lengther = data.items.length;
 	});
 });
-var username, password;
-function success(data)
-{
-	if(data.redirect === "/")
-	{
-		window.location = window.location.href.split("/")[1] + "/";
-		return;
-	}
-	//$("#itemLabel").html("Your Cart (" + number of items in cart + " Items)");
-}
+var lengther;

@@ -46,7 +46,7 @@ h3 {
 /*SPECIFIC LOGIN ELEMENTS STYLE*/
 
 #accountBox {
-  height: 200px
+  height: 500px
 }
 
 #signup {
@@ -464,7 +464,7 @@ h3 {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.9);
   width: 380px;
-  height: 430px;
+  height: 500px;
   border-radius: 10px;
   position: relative;
   animation: flyInFromTop 1s 1 ease;
