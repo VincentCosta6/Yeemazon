@@ -20,6 +20,9 @@ $(document).ready(function() {
         if ($("#search").val() && $("#search").val() !== "Search for an item")
           window.location = window.location.href.split("/")[1] + "/search?query=" + $("#search").val().toLowerCase();
       });
+      $("#ProductMan").click(() => {
+        window.location = window.location.href.split("/")[1] + "/itemCRUD";
+      });
 
       //SEARCH BUTTON BEHAVIOR
       if (!($("#search").val()) || $("#search").val() == "Search for an item")
