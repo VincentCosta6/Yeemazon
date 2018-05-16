@@ -13,7 +13,6 @@ const saltRounds = startup.saltRounds;
 
 
 const mongoose = require('mongoose');
-const mongoose2 = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
 const validd = require('mongoose').Types.ObjectId;
 var path = require('path');
@@ -24,7 +23,16 @@ let formidable = require('formidable');
 const perms = ["viewer", "user", "moderator", "admin"];
 const permissions = new (require('./modules/permissions')) (perms);
 
-mongoose.connect("mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon");
+let uri = "mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon";
+let options = {
+  autoIndex: false,
+  reconnectTries: Number.MAX_VALUE,
+  reconnectInterval: 10000,
+  poolSize: 35,
+  bufferMaxEntries: 0,
+	keepAlive: Number.MAX_VALUE
+};
+mongoose.connect(uri, options);
 let db = mongoose.connection;
 let products = require('./models/products');
 let users = require('./models/users');
