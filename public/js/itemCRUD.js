@@ -1,10 +1,13 @@
 $(document).ready(() => {
   $("#updatef").toggle(false);
+  $("#okay").toggle(false);
+  $("#okay2").toggle(false);
   $("#updater").toggle(false);
   $('#which input').on('change', function() {
    var decide = $('input[name=radioName]:checked', '#which').val() == "Add Item";
    $("#addf").toggle(decide);
    $("#updatef").toggle(!decide);
+   $("#okay").toggle(!decide);
 
  });
 
@@ -14,15 +17,24 @@ $(document).ready(() => {
      $(this).val('');
    }
  });
+ $("#remove2").click(() => {
+   $.post("/deleteItem", {_id: $("#IDSearch").val()}, (data) => {
+     alert(data.reason);
+   });
+ });
  $("#changeID").click(() => {
    $.get("/findItem", {_id: $("#IDSearch").val()}, (data) => {
      if(data.failed) {
       $("#updater").toggle(false);
+      $("#okay2").toggle(false);
+      $("#okay").toggle(false);
       $("#IDSearch").val("");
       alert("Failed");
     }
     else {
       $("#updater").toggle(true);
+      $("#okay2").toggle(true);
+      $("#okay").toggle(true);
       $("#name2").val(data.item.name);
       $("#desc2").val(data.item.description);
       $("#price2").val(data.item.price);
@@ -60,7 +72,7 @@ $(document).ready(() => {
             contentType: false,
             processData: false,
             success: function (data) {
-                $.post("/addItem", {name: $("#name").val(), description: $("#desc").val(), price: $("#price").val(), keywords: $("#key").val(), picName: data.key}, () => {
+                $.post("/addItem", {name: $("#name").val(), description: $("#desc").val(), price: $("#price").val(), keywords: $("#key").val(), picName: data.link}, () => {
                   alert(data.reason);
                 });
             },
@@ -71,23 +83,32 @@ $(document).ready(() => {
   }));
   $('#updatef').on('submit', (function (e) {
     e.preventDefault();
-    /*var formData = new FormData(this);
+    var formData = new FormData(this);
     console.log($("#url").val());
-    $.ajax({
-            type: 'POST',
-            url:"/fileUpload",
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function (data) {
-                $.post("/addItem", {name: $("#name").val(), description: $("#desc").val(), price: $("#price").val(), keywords: $("#key").val(), picName: data.key}, () => {
-                  alert(data.reason);
-                });
-            },
-            error: function (data) {
-                console.log(data.reason);
-            }
-    });*/
+    if($("#url2").val() == "")
+      $.get("/picLink", {_id: $("#IDSearch").val()}, (data) => {
+        passData(data);
+      });
+    else
+      $.ajax({
+              type: 'POST',
+              url:"/fileUpload",
+              data: formData,
+              cache: false,
+              contentType: false,
+              processData: false,
+              success: function(data) {
+                passData(data);
+              },
+              error: function (data) {
+                  console.log(data.reason);
+              }
+      });
   }));
 });
+function passData(data)
+{
+  $.post("/changeItem", {_id: $("#IDSearch").val(), name: $("#name2").val(), description: $("#desc2").val(), price: $("#price2").val(), keywords: $("#key2").val().split(" "), link: data.link}, (data) => {
+    alert(data.reason);
+  });
+}

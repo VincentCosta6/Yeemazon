@@ -57,21 +57,24 @@
           <button id= "add " class= "request" type="submit">Add Item</button>
         <div style= "margin-top: 20px "></div></div>
       </form>
-      <form id = "updatef">
-        <br>
+      <div id = "okay">
         <input type="text" id="IDSearch" value="SearchID" class= "adminInput"></input><button id= "changeID" class= "request">Find</button><br>
+      </div>
+      <form id = "updatef" action="/fileupload">
+        <br>
         <div id= "updater">
           <br>
-
           <input style = "width: 600px;" type="text" id="name2" value="Item Name" class= "adminInput"></input><br>
           <input style = "width: 600px;" type="text" id="desc2" value="Item Description" class="adminInput"></input><br>
           <input style = "width: 600px;" type="text" id="price2" value="Item Price" class="adminInput"></input><br>
           <input style = "width: 600px;" type="text" id="key2" value="Key Words" class= "adminInput"></input><br>
-          <input style = "width: 600px;" type="file" id="url2" value="Item Picture URL" class= "adminInput"></input><br><br><br>
-          <button id= "change2" class= "request">Change Item</button>
-          <button id= "remove2" class= "request">Delete Item</button>
+          <input style = "width: 600px;" type="file" id="url2" name = "sample" value="Item Picture URL" class= "adminInput"></input><br><br><br>
+          <button id= "change2" class= "request" type = "submit">Change Item</button>
         <div style= "margin-top: 20px "></div></div>
       </form>
+      <div id = "okay2">
+        <button id= "remove2" class= "request">Delete Item</button>
+      </div>
     </div>
     <script src="js/toolbar.js"></script>
     <script src="js/userInfo.js"></script>

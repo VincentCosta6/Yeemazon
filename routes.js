@@ -400,6 +400,14 @@ router.get("/permissions", function(req, res) {
 	return res.json({permissions: perms});
 });
 
+router.get("/picLink", function(req, res) {
+	products.findOne({_id: req.query._id}, (err, product) => {
+		if(err) throw err;
+		if(!product) return res.json({passed: false, reason: "Could not find item"});
+		return res.json({link: product.link});
+	});
+});
+
 router.get("/myOrders", function(req, res) {
 	users.findOne({username: req.session_state.user.username}, (err, user) => {
 		if(err) throw err;
@@ -424,13 +432,13 @@ router.post("/logout", function(req, res){
 
 router.post("/fileUpload", function (req, res) {
 	if(!req.files.sample) return res.json({passed: false, reason: "You did not upload a file"});
-	let key = uuidv4();
+	let link = uuidv4();
 	let extend = req.files.sample.name.split(".")[1];
-	req.files.sample.mv(__dirname + "\\public\\images\\" + key + "." + extend, (err) => {
+	req.files.sample.mv(__dirname + "\\public\\images\\" + link + "." + extend, (err) => {
 		if(err) throw err;
 		else {
 			console.log("Upload");
-			return res.json({passed: true, reason: "File Uploaded", key: (key + "." + extend)});
+			return res.json({passed: true, reason: "File Uploaded", link: (link + "." + extend)});
 		}
 	});
 });
@@ -458,19 +466,17 @@ router.post("/addItem", function(req, res) {
 
 router.post("/changeItem", function(req, res) {
 
-	let bodyChecks = [req.body._id, req.body.name, req.body.description, req.body.price, req.body.keywords];
-
+	let bodyChecks = [req.body._id, req.body.name, req.body.description, req.body.price, req.body.keywords, req.body.link];
+	if(req.body.keywords[req.body.keywords.length - 1] == '')
+		req.body.keywords.splice(req.body.keywords.length - 1, 1);
 	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-
-	users.findOne({username:req.session_state.user.username}, (err, user) => {
+	products.findOne({_id:req.body._id}, (err, item) => {
 		if(err) throw err;
-		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-		if(!check.passed)	return res.json(check);
-		products.findOne({_id:req.body._id}, (err, item) => {
-			if(err) throw err;
-			if(!item)
-				return res.json({passed:false, reason:"Item not found"});
+		if(!item)
+			return res.json({passed:false, reason:"Item not found"});
+		if(item.creator == req.session_state.user.username || permissions.checkPermission(req.session_state.user.permission, "moderator"))
+		{
 			var changed = false;
 			if(req.body.name !== item.name)	{
 				item.name = req.body.name;
@@ -485,7 +491,7 @@ router.post("/changeItem", function(req, res) {
 				changed = true;
 			}
 			if(req.body.link !== item.link) {
-				item.link = req.body.link;
+				item.link = "images/" + req.body.link;
 				changed = true;
 			}
 			if(!arraysAreEqual(req.body.keywords, item.keywords)) {
@@ -501,8 +507,10 @@ router.post("/changeItem", function(req, res) {
 			else {
 				return res.json({passed:false, reason:"No Changes found"});
 			}
-
-		});
+		}
+		else {
+			return res.json({passed: false, reason: "You are not the creator of this item or you are not a moderator"});
+		}
 	});
 });
 
@@ -511,14 +519,19 @@ router.post("/deleteItem", function(req, res) {
 
 	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
-	users.findOne({username:req.session_state.user.username}, (err, user) => {
-		let check = permissionAndXSSCheck(user, "admin", bodyChecks);
-		if(!check.passed)	return res.json(check);
+	products.findOne({_id:req.body._id}, (err, item) => {
+		if(item.creator == req.session_state.user.username || permissions.checkPermission(req.session_state.user.permission, "moderator"))
+		{
+			products.remove({_id: req.body._id}, (err, prod) => {
+				if(err) throw err;
+				if(!prod) return res.json({passed: false, reason: "Couldnt find this item"});
+				return res.json({passed: false, reason: "Item deleted"});
+			});
+		}
+		else {
+			return res.json({passed: false, reason: "You are not the creator of this item or you are not a moderator"});
+		}
 
-		products.findOneAndRemove({_id:req.body._id}, (err, item) => {
-			if(err || !item) return res.json({passed : false, reason : "Item not found"});
-			return res.json({passed:true, reason:"Successfully removed"});
-		});
 	});
 });
 
