@@ -1,6 +1,6 @@
 body {
   background-image: url('index.jpg');
-  background:cover;
+  background: cover;
 }
 
 label {
@@ -76,7 +76,7 @@ h3 {
   text-decoration: none;
   overflow: hidden;
   border-radius: 4px;
-  height:20px;
+  height: 20px;
 }
 
 #createLobby {
@@ -89,9 +89,9 @@ h3 {
   text-decoration: none;
   overflow: hidden;
   border-radius: 4px;
-  width:100px;
-  height:30px;
-  cursor:pointer;
+  width: 100px;
+  height: 30px;
+  cursor: pointer;
 }
 
 .request:active:after, .back:active:after, .lobbyButton:active:after {
@@ -106,7 +106,7 @@ h3 {
   color: #000;
 }
 
-.request:after, .back:after,, .lobbyButton:after {
+.request:after, .back:after, , .lobbyButton:after {
   content: "";
   background: #F1C40F;
   display: block;
@@ -527,36 +527,36 @@ li {
   font-family: "tahoma";
   color: #DDD;
   font-weight: bold;
-  font-size:12px;
+  font-size: 12px;
   list-style-type: none;
 }
 
 #list {
-  width:50%;
+  width: 50%;
   margin: 0 auto;
   text-align: center;
   padding: 0;
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .finderLobbies {
   font-family: "tahoma";
   color: #DDD;
   font-weight: bold;
-  font-size:30px;
+  font-size: 30px;
   list-style-type: none;
   text-shadow: 1px 1px 1px #000000;
   border: 0;
   text-align: center;
   overflow: hidden;
   transition: .3s;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   text-decoration: none;
   overflow: hidden;
   border-radius: 4px;
-  width:290px;
-  height:40px;
-  cursor:pointer;
+  width: 290px;
+  height: 40px;
+  cursor: pointer;
 }
 
 #lobbyPageback {

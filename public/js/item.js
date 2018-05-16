@@ -11,7 +11,7 @@ $(document).ready(function() {
     $("#name").html("Yeemazon Official " + name);
     $(document).prop('title', 'Yeemazon - ' + data.item.name);
     $("#itemPrice").html("$" + data.item.price);
-    $("#shipping").html(" + $" + Math.floor(data.item.price/10) + ".99 shipping");
+    $("#shipping").html(" + $" + Math.floor(data.item.price / 10) + ".99 shipping");
     $("#itemDesc").html(data.item.description);
     $("#itemClick").html("Clicks: " + data.item.clicks);
     $("#itemClickNum").html("Unique Clicks: " + data.item.usersClicked.length);

@@ -1,30 +1,36 @@
-var repeat, go =true;;
+var repeat, go = true;;
 $(document).ready(() => {
   $("#createLobby").click(() => {
     var users = [];
     users.push(username);
     var userArr = $("#users").val().split(" ");
-    for(let i in userArr)
+    for (let i in userArr)
       users.push(userArr[i]);
-    $.post("/sendMessage", {newLobby: "newLobby", users: users, name: $("#name").val()}, (data) => {
+    $.post("/sendMessage", {
+      newLobby: "newLobby",
+      users: users,
+      name: $("#name").val()
+    }, (data) => {
       console.log(data);
-      if(!data.passed)
+      if (!data.passed)
         alert(data.reason);
     });
   });
 
 
-  var x = 3.5, keepGoing = true, allowed = false, mlength = 0;
+  var x = 3.5,
+    keepGoing = true,
+    allowed = false,
+    mlength = 0;
   repeat = function() {
-    if(go)
-    {
-      $.get("/lobbyChange", {length: mlength}, (data) => {
-        if(data.upToDate == false)
-        {
+    if (go) {
+      $.get("/lobbyChange", {
+        length: mlength
+      }, (data) => {
+        if (data.upToDate == false) {
           $("#list").empty();
           mlength = data.lobbies.length;
-          for(let i in data.lobbies)
-          {
+          for (let i in data.lobbies) {
             var string = "<li class=\"finderLobbies\" id = \"lob" + i + "\">" + data.lobbies[i].name + "(" + data.lobbies[i].length + ")</li>";
             $("#list").append(string);
             $("#lob" + i).click(() => {
@@ -35,14 +41,14 @@ $(document).ready(() => {
         }
       });
     }
-    setTimeout(repeat, x*1000);
+    setTimeout(repeat, x * 1000);
   };
   repeat();
 });
 $(window).focus(function() {
-    go = true;
+  go = true;
 });
 
 $(window).blur(function() {
-    go = false;
+  go = false;
 });

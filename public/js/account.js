@@ -1,12 +1,14 @@
 $(document).ready(function() {
   $.get("/userInfo", success);
   $.get("/permissions", (data) => {
-    for(let i in data.permissions)
+    for (let i in data.permissions)
       $("#perm2").append("<option value=\"" + data.permissions[i] + "\">" + capitalizeFirstLetter(data.permissions[i]) + "</option>");
   });
   $("#requestPermission").click(() => {
-    $.get("/requestPermission", {permissionLevel: $("#perm2").val()}, (data) => {
-        alert(data.reason);
+    $.get("/requestPermission", {
+      permissionLevel: $("#perm2").val()
+    }, (data) => {
+      alert(data.reason);
     })
   });
   $("#logout").click(() => {
@@ -37,6 +39,7 @@ function success(data) {
 function itemCall(data) {
   alert(data.reason);
 }
+
 function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
