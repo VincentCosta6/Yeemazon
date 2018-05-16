@@ -46,7 +46,7 @@ h3 {
 /*SPECIFIC LOGIN ELEMENTS STYLE*/
 
 #accountBox {
-  height: 500px
+  height: 350px
 }
 
 #signup {
@@ -66,19 +66,47 @@ h3 {
   border-radius: 4px
 }
 
-.request:active:after, .back:active:after {
+.lobbyButton {
+  font-weight: bold;
+  border: 0;
+  text-align: center;
+  overflow: hidden;
+  transition: .3s;
+  background-color: #DDD;
+  text-decoration: none;
+  overflow: hidden;
+  border-radius: 4px;
+  height:20px;
+}
+
+#createLobby {
+  font-weight: bold;
+  border: 0;
+  text-align: center;
+  overflow: hidden;
+  transition: .3s;
+  background-color: #DDD;
+  text-decoration: none;
+  overflow: hidden;
+  border-radius: 4px;
+  width:100px;
+  height:30px;
+  cursor:pointer;
+}
+
+.request:active:after, .back:active:after, .lobbyButton:active:after {
   padding: 0;
   margin: 0;
   opacity: 1;
 }
 
-.request:hover, .back:hover {
+.request:hover, .back:hover, .lobbyButton:hover {
   background: #FFF;
   box-shadow: 0px 0px 10px 5px #97B1BF;
   color: #000;
 }
 
-.request:after, .back:after {
+.request:after, .back:after,, .lobbyButton:after {
   content: "";
   background: #F1C40F;
   display: block;
@@ -197,6 +225,20 @@ h3 {
   animation: flyInFromBottom 1s 1 ease;
 }
 
+#crudToolbar {
+  margin: 0 auto;
+  background: rgba(20, 20, 20, 0.9);
+  width: 35%;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
 #fakeToolbar {
   margin: 0 auto;
   background: rgba(20, 20, 20, 0.9);
@@ -255,6 +297,17 @@ h3 {
   background: rgba(30, 30, 30, 0.7);
   width: 75%;
   height: 920px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
+#crudPageback {
+  margin: 0 auto;
+  background: rgba(30, 30, 30, 0.7);
+  width: 35%;
+  height: 420px;
   border-radius: 10px;
   text-align: center;
   position: relative;
@@ -470,8 +523,65 @@ h3 {
   animation: flyInFromTop 1s 1 ease;
 }
 
+li {
+  font-family: "tahoma";
+  color: #DDD;
+  font-weight: bold;
+  font-size:12px;
+  list-style-type: none;
+}
+
 #list {
-  
+  width:50%;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0;
+  cursor:pointer;
+}
+
+.finderLobbies {
+  font-family: "tahoma";
+  color: #DDD;
+  font-weight: bold;
+  font-size:30px;
+  list-style-type: none;
+  text-shadow: 1px 1px 1px #000000;
+  border: 0;
+  text-align: center;
+  overflow: hidden;
+  transition: .3s;
+  background-color: rgba(0,0,0,0.5);
+  text-decoration: none;
+  overflow: hidden;
+  border-radius: 4px;
+  width:290px;
+  height:40px;
+  cursor:pointer;
+}
+
+#lobbyPageback {
+  margin: 0 auto;
+  background: rgba(30, 30, 30, 0.7);
+  width: 30%;
+  height: 320px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
+#lobbyToolbar {
+  margin: 0 auto;
+  background: rgba(20, 20, 20, 0.9);
+  width: 30%;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
 }
 
 /* ANIMATIONS */

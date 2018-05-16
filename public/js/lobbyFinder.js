@@ -25,12 +25,13 @@ $(document).ready(() => {
           mlength = data.lobbies.length;
           for(let i in data.lobbies)
           {
-            var string = "<li id = \"lob" + i + "\">" + data.lobbies[i].name + "(" + data.lobbies[i].length + ")</li>";
+            var string = "<li class=\"finderLobbies\" id = \"lob" + i + "\">" + data.lobbies[i].name + "(" + data.lobbies[i].length + ")</li>";
             $("#list").append(string);
             $("#lob" + i).click(() => {
               window.location = window.location.href.split("/")[1] + "/lobby?id=" + data.lobbies[i]._id;
             });
           }
+          $("#lobbyPageback").css("height", 340 + $("#list").height());
         }
       });
     }

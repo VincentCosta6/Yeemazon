@@ -51,7 +51,7 @@ $(document).ready(function(){
 
 		//scale the back of the page to compensate for number of items
 		$(".orderHolder").css("height", 230 * (Math.floor((data.items.length/6)) + 1));
-		$("#ordersPageback").css("height", 350 * (Math.floor((data.items.length/6)) + 1));
+		$("#ordersPageback").css("height", 370 * (Math.floor((data.items.length/6)) + 1));
 
 		//update search list size to show user
 		$(".itemLabel").html("Your cart has " + data.items.length + " items");
