@@ -48,7 +48,7 @@ $(document).ready(function() {
     $.post("/sendMessage", {
       newLobby: "newLobby",
       users: [username, creator2],
-      name: username + " has a question on item " + name
+      name: username + " has a question on " + name
     }, (data) => {
       alert(data.reason);
     });
