@@ -303,6 +303,17 @@ h3 {
   animation: flyInFromBottom 1s 1 ease;
 }
 
+#chatPageback {
+  margin: 0 auto;
+  background: rgba(30, 30, 30, 0.7);
+  width: 35%;
+  height: 1500px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
 #crudPageback {
   margin: 0 auto;
   background: rgba(30, 30, 30, 0.7);
@@ -532,7 +543,7 @@ li {
 }
 
 #list {
-  width: 50%;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
   padding: 0;
@@ -543,7 +554,7 @@ li {
   font-family: "tahoma";
   color: #DDD;
   font-weight: bold;
-  font-size: 30px;
+  font-size: 25px;
   list-style-type: none;
   text-shadow: 1px 1px 1px #000000;
   border: 0;
@@ -554,9 +565,54 @@ li {
   text-decoration: none;
   overflow: hidden;
   border-radius: 4px;
-  width: 290px;
-  height: 40px;
+  width: 100%;
+  height: 35px;
   cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.finderLobbies:active:after {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.finderLobbies:hover {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.finderLobbies:after {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.chatListElement {
+  font-family: "tahoma";
+  color: #DDD;
+  font-weight: bold;
+  font-size: 14px;
+  list-style-type: none;
+  text-shadow: 1px 1px 1px #000000;
+  border: 0;
+  text-align: center;
+  overflow: hidden;
+  transition: .3s;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-decoration: none;
+  overflow: hidden;
+  border-radius: 4px;
+  width: 100%;
+  height: 20px;
+  margin-bottom: 5px;
+}
+
+.chatListElement:active:after {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.chatListElement:hover {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.chatListElement:after {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 #lobbyPageback {
@@ -574,6 +630,20 @@ li {
   margin: 0 auto;
   background: rgba(20, 20, 20, 0.9);
   width: 30%;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  animation: flyInFromBottom 1s 1 ease;
+}
+
+#chatToolbar {
+  margin: 0 auto;
+  background: rgba(20, 20, 20, 0.9);
+  width: 35%;
   height: 40px;
   border-radius: 10px;
   text-align: center;

@@ -6,7 +6,6 @@ $(document).ready(() => {
   console.log(firstLoop);
   id = retreiveID(window.location.href);
 
-
   $("#sendMessage").click(() => {
     $.post("/sendMessage", {
       messageSent: "messageSent",
@@ -18,7 +17,8 @@ $(document).ready(() => {
         alert(data.reason);
       }
     });
-    $("#list").append("<li id = \"Heyo\">" + (username + ":" + $("#message").val()) + "</li>");
+    $("#list").append("<li id = \"Heyo\" class = \"chatListElement\">" + (username + ": " + $("#message").val()) + "</li>");
+    $("#chatPageback").css("height", 150 + $("#list").height());
   });
   $("#sendInvite").click(() => {
     $.post("/sendMessage", {
@@ -30,7 +30,8 @@ $(document).ready(() => {
       if (!data.passed)
         alert(data.reason);
     });
-    $("#list").append("<li id = \"" + ($("#list").size()) + "\">" + (username + ":invited " + $("#user").val()) + "</li>");
+    $("#list").append("<li id = \"" + ($("#list").size()) + "\" class = \"chatListElement\">" + (username + " invited " + $("#user").val()) + " to the lobby</li>");
+    $("#chatPageback").css("height", 150 + $("#list").height());
   });
   $("#deleteLobby").click(() => {
 
@@ -72,7 +73,7 @@ $(document).ready(() => {
         let i;
         for (i in data.messages)
           if (firstLoop || (!(data.messages[i].split(":")[0] == username))) {
-            $("#list").append("<li id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
+            $("#list").append("<li class = \"chatListElement\" id = \"m" + ($("#list").size() + i) + "\">" + data.messages[i] + "</li>");
             $("#m" + $("#list").size() + i).click(textClickProcess($("#list").size() + i));
           }
         mlength = mlength + data.messages.length;
@@ -82,6 +83,7 @@ $(document).ready(() => {
       if ($(window).scrollTop() + getScrollbarHeight() >= $(window).height())
         window.scrollTo(0, document.body.scrollHeight);
     }
+    $("#chatPageback").css("height", 150 + $("#list").height());
     if (keepGoing)
       setTimeout(refreshData, x * 1000);
   }
