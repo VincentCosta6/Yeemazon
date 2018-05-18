@@ -8,7 +8,7 @@ $(document).ready(() => {
     $("#addf").toggle(decide);
     $("#updatef").toggle(!decide);
     $("#okay").toggle(!decide);
-
+    $("#okay2").toggle(!decide);
   });
 
   $(".adminInput").focus(function() {
