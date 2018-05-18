@@ -508,6 +508,19 @@ h3 {
   margin: 15px;
   flex-wrap: wrap;
   cursor: pointer;
+  transition: .3s;
+}
+
+.itemBox:active:after {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.itemBox:hover {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+.itemBox:after {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 #searchBack {

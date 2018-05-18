@@ -23,16 +23,13 @@ $(document).ready(function() {
     for (let i = 0; i < data.items.length; i++)
       if (data.items[i])
         appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
-
-    $("#items4").css("height", 230 * (Math.floor(data.items.length / 6) + 1));
-    $("#sessionPageback").css("height", 1050 + (230 * (Math.floor(data.items.length / 6) + 1)));
     numItems = data.items.length;
   });
 
   setTimeout(function() {
     $(".itemCont").css("height", 260 * (Math.floor((numItems / 6)) + 1));
-    $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((numItems / 6)) + 1)));
-  }, 1000);
+    $("#sessionPageback").css("height", 1100 + $(".itemCont").height());
+  }, 500);
 });
 
 function appender(id, link, name, price, clicks, uniqueClicks, which) {
