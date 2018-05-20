@@ -22,11 +22,11 @@ function redirect(data) {
 $(document).ready(function() {
   $.get("/userInfo", success);
   $("#request").click(sendLogin);
-  //$("#former").on('submit', submitForm);
+  //$("#former").on("submit", submitForm);
 
   $(document).keypress(function(e) {
     if (e.keyCode == 13)
-      $('#request').click();
+      $("#request").click();
   });
 });
 

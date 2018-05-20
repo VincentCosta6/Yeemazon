@@ -43,25 +43,25 @@ $(document).ready(function() {
 
   $(document).keypress(function(e) {
     if (e.keyCode == 13 && $("#search").val() && $("#search").val() !== "Search for an item")
-      $('#request').click();
+      $("#request").click();
 
     if (!($("#search").val()) || $("#search").val() == "Search for an item")
-      $('#request').prop('disabled', true);
+      $("#request").prop("disabled", true);
     else
-      $('#request').prop('disabled', false);
+      $("#request").prop("disabled", false);
   });
 
-  $('#request').prop('disabled', true);
+  $("#request").prop("disabled", true);
 
   $("#search").focus(function() {
     if ($(this).val() == "Search for an item") {
-      $(this).val('');
+      $(this).val("");
     }
   });
 
   $("#search").blur(function() {
     if ($(this).val() == "") {
-      $(this).val('Search for an item');
+      $(this).val("Search for an item");
     }
   });
 });

@@ -3,8 +3,8 @@ $(document).ready(() => {
   $("#okay").toggle(false);
   $("#okay2").toggle(false);
   $("#updater").toggle(false);
-  $('#which input').on('change', function() {
-    var decide = $('input[name=radioName]:checked', '#which').val() == "Add Item";
+  $("#which input").on("change", function() {
+    var decide = $("input[name=radioName]:checked", "#which").val() == "Add Item";
     $("#addf").toggle(decide);
     $("#updatef").toggle(!decide);
     $("#okay").toggle(!decide);
@@ -14,7 +14,7 @@ $(document).ready(() => {
   $(".adminInput").focus(function() {
     if ($(this).val() == "SearchID" || $(this).val() == "Item Name" || $(this).val() == "Item ID" || $(this).val() == "Item Description" ||
       $(this).val() == "Item Picture URL" || $(this).val() == "Item Price" || $(this).val() == "Key Words") {
-      $(this).val('');
+      $(this).val("");
     }
   });
   $("#remove2").click(() => {
@@ -63,12 +63,12 @@ $(document).ready(() => {
   }
 
 
-  $('#addf').on('submit', (function(e) {
+  $("#addf").on("submit", (function(e) {
     e.preventDefault();
     var formData = new FormData(this);
     console.log($("#url").val());
     $.ajax({
-      type: 'POST',
+      type: "POST",
       url: "/fileUpload",
       data: formData,
       cache: false,
@@ -90,7 +90,7 @@ $(document).ready(() => {
       }
     });
   }));
-  $('#updatef').on('submit', (function(e) {
+  $("#updatef").on("submit", (function(e) {
     e.preventDefault();
     var formData = new FormData(this);
     console.log($("#url").val());
@@ -102,7 +102,7 @@ $(document).ready(() => {
       });
     else
       $.ajax({
-        type: 'POST',
+        type: "POST",
         url: "/fileUpload",
         data: formData,
         cache: false,

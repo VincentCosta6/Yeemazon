@@ -9,7 +9,7 @@ $(document).ready(function() {
     data.item = data.item[0];
     name = data.item.name;
     $("#name").html("Yeemazon Official " + name);
-    $(document).prop('title', 'Yeemazon - ' + data.item.name);
+    $(document).prop("title", "Yeemazon - " + data.item.name);
     $("#itemPrice").html("$" + data.item.price);
     $("#shipping").html(" + $" + Math.floor(data.item.price / 10) + ".99 shipping");
     $("#itemDesc").html(data.item.description);
@@ -48,7 +48,7 @@ $(document).ready(function() {
     $.post("/sendMessage", {
       newLobby: "newLobby",
       users: [username, creator2],
-      name: username + " has a question on " + name
+      name: username + " has a question on item " + name
     }, (data) => {
       alert(data.reason);
     });

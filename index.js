@@ -1,11 +1,11 @@
 var myIP = require("ip");
-var express = require('express');
-var bodyParser = require('body-parser');
+var express = require("express");
+var bodyParser = require("body-parser");
 
-var startup = require('./startup');
-var fileUpload = require('express-fileupload');
+var startup = require("./startup");
+var fileUpload = require("express-fileupload");
 var routes = require("./routes");
-var clientSessions = require('client-sessions');
+var clientSessions = require("client-sessions");
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -17,22 +17,22 @@ app.use(clientSessions({
   maxAge: startup.cookieExpirationinMS
 }));
 
-app.use('/', express.static('./'));
-app.use('/views', express.static('./public/views'));
-app.use('/css', express.static('./public/css'));
-app.use('/js', express.static('./public/js'));
-app.use('/images', express.static('./public/images'));
+app.use("/", express.static("./"));
+app.use("/views", express.static("./public/views"));
+app.use("/css", express.static("./public/css"));
+app.use("/js", express.static("./public/js"));
+app.use("/images", express.static("./public/images"));
 app.use(routes);
 
 if(startup.https === true)
 {
-	var http = require('http');
-	var https = require('https');
+  var http = require("http");
+  var https = require("https");
 
-  var fs = require('fs');
+  var fs = require("fs");
   var options = {
-    key: fs.readFileSync('./ssl/key.pem'),
-    cert: fs.readFileSync('./ssl/cert.pem')
+    key: fs.readFileSync("./ssl/key.pem"),
+    cert: fs.readFileSync("./ssl/cert.pem")
   };
 
 	http.createServer(app).listen(startup.port);

@@ -26,17 +26,17 @@ $(document).ready(function() {
 
   //SEARCH BUTTON BEHAVIOR
   if (!($("#search").val()) || $("#search").val() == "Search for an item")
-    $('#request').prop('hidden', true);
+    $("#request").prop("hidden", true);
 
   $("#search").click(function() {
     if ($(this).val() == "Search for an item") {
-      $(this).val('');
+      $(this).val("");
     }
   });
 
   $("#search").blur(function() {
     if ($(this).val() == "") {
-      $(this).val('Search for an item');
+      $(this).val("Search for an item");
     }
   });
 });
@@ -46,10 +46,10 @@ $(document).keypress(function(e) {
   if ($("#search").val().includes("<") || $("#search").val().includes(">"))
     return alert("Improper search please dont use < or >");
   if (e.keyCode == 13 && $("#search").val() && $("#search").val() !== "Search for an item")
-    $('#request').click();
+    $("#request").click();
 
   if (!($("#search").val()) || $("#search").val() == "Search for an item")
-    $('#request').prop('hidden', true);
+    $("#request").prop("hidden", true);
   else
-    $('#request').prop('hidden', false);
+    $("#request").prop("hidden", false);
 });

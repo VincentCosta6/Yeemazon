@@ -27,9 +27,9 @@ $(document).ready(function() {
   $("#request").click(sendLogin);
   $("#signup").click(sendSignup);
 
-  $('.loginInput').keypress(function(e) {
+  $(".loginInput").keypress(function(e) {
     if (e.keyCode == 13)
-      $('#request').click();
+      $("#request").click();
   });
 });
 

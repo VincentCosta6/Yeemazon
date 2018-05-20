@@ -1,27 +1,27 @@
 
 let express = require("express");
 let router = express.Router();
-let startup = require('./startup');
+let startup = require("./startup");
 
-const request = require('request');
-const clientSessions = require('client-sessions');
-const uuidv4 = require('uuid/v4');
-const nodemailer = require('nodemailer');
+const request = require("request");
+const clientSessions = require("client-sessions");
+const uuidv4 = require("uuid/v4");
+const nodemailer = require("nodemailer");
 
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const saltRounds = startup.saltRounds;
 
 
-const mongoose = require('mongoose');
-const ObjectID = require('mongodb').ObjectID;
-const validd = require('mongoose').Types.ObjectId;
-var path = require('path');
-var fs = require('fs');
+const mongoose = require("mongoose");
+const ObjectID = require("mongodb").ObjectID;
+const validd = require("mongoose").Types.ObjectId;
+var path = require("path");
+var fs = require("fs");
 
-let formidable = require('formidable');
+let formidable = require("formidable");
 
 const perms = ["viewer", "user", "moderator", "admin"];
-const permissions = new (require('./modules/permissions')) (perms);
+const permissions = new (require("./modules/permissions")) (perms);
 
 let uri = "mongodb://admin:admin123@ds135399.mlab.com:35399/yemazon";
 let options = {
@@ -34,14 +34,14 @@ let options = {
 };
 mongoose.connect(uri, options);
 let db = mongoose.connection;
-let products = require('./models/products');
-let users = require('./models/users');
-let devKeys = require('./models/devKeys');
-let messages = require('./models/messages');
+let products = require("./models/products");
+let users = require("./models/users");
+let devKeys = require("./models/devKeys");
+let messages = require("./models/messages");
 
-let version = require('./keyVersion').version;
+let version = require("./keyVersion").version;
 
-db.once('open',function() {
+db.once("open",function() {
 	console.log("Connected to remote db.");
 
 	users.count({}, (err, count) => {
@@ -57,7 +57,7 @@ db.once('open',function() {
 		console.log("Number of chats: " + count);
 	});
 });
-db.on('error',function(err){
+db.on("error",function(err){
 	console.log(err);
 });
 
@@ -65,7 +65,7 @@ let transporter = nodemailer.createTransport({
  service: startup.emailType,
  host: startup.host,
  auth: {
- 		type:'login',
+ 		type:"login",
         user: startup.email,
         pass: startup.password
     },
@@ -153,7 +153,7 @@ router.post("/signup", function(req, res){
 			sessionKeys : [sessionKey]
 		}
 		req.session_state.user = newUser;
-		db.collection('users').insert(newUser);
+		db.collection("users").insert(newUser);
 		messages.update({name: "Global Lobby"}, {$push: {Users: req.body.username, messages: req.body.username + " has joined Yeemazon"}}, (err, use) => {
 			if(err) throw err;
 		});
@@ -312,7 +312,7 @@ router.get("/requestPermission", function(req, res) {
 		name: req.session_state.user.username + " is requesting " + req.query.permissionLevel + " permissions",
 		creator: req.session_state.user.username
 	};
-	db.collection('messages').insert(newMessage);
+	db.collection("messages").insert(newMessage);
 	requests.push({key: key1, username: req.session_state.user.username, permission: req.query.permissionLevel, answer: true});
 	requests.push({key: key2, username: req.session_state.user.username, permission: req.session_state.user.permission, answer: false});
 	return res.json({passed: true, reason: "Requested " + req.query.permissionLevel + " to " + target});
@@ -465,7 +465,7 @@ router.post("/addItem", function(req, res) {
 		let newItem = { _id : new ObjectID(), name : req.body.name, description : req.body.description, price : req.body.price, link : "images/" + req.body.picName, keywords : req.body.keywords, creator : user.username, usersClicked : []
 
 		};
-		db.collection('products').insert(newItem);
+		db.collection("products").insert(newItem);
 		return res.json({passed:true, reason:"Success"});
 
 	});
@@ -475,7 +475,7 @@ router.post("/addItem", function(req, res) {
 router.post("/changeItem", function(req, res) {
 
 	let bodyChecks = [req.body._id, req.body.name, req.body.description, req.body.price, req.body.keywords, req.body.link];
-	if(req.body.keywords[req.body.keywords.length - 1] == '')
+	if(req.body.keywords[req.body.keywords.length - 1] == "")
 		req.body.keywords.splice(req.body.keywords.length - 1, 1);
 	if(arrayItemsInvalid(bodyChecks)) return res.json({passed : false, reason : "Headers are invalid or not initialized"});
 
@@ -653,7 +653,7 @@ router.post("/sendMessage", function(req, res) {
 					name: name,
 					creator: req.session_state.user.username
 				};
-				db.collection('messages').insert(newLobby);
+				db.collection("messages").insert(newLobby);
 				return res.json({passed: true, reason: "Lobby created with " + (req.body.users.length - 1) + " others"});
 			}
 			else if(req.body.removeLobby)
@@ -723,7 +723,7 @@ router.post("/generateDevKey", function(req, res){
 		if(check.passed === false) return res.json(check);
 
 		let newDevKey = {devKey:uuidv4()};
-		db.collection('devKeys').insert(newDevKey);
+		db.collection("devKeys").insert(newDevKey);
 	});
 });
 
@@ -751,7 +751,7 @@ router.post("/updatePermission", function(req, res) {
 					name: req.session_state.user.username + " has rejected your promotion",
 					creator: requests[i].username
 				};
-				db.collection('messages').insert(newMessage);
+				db.collection("messages").insert(newMessage);
 				return res.json({passed: true, reason: "Rejected upgrade"});
 			}
 		}
@@ -794,7 +794,7 @@ router.get("/updateSchema", function(req, res) {
 			name: "Global Lobby",
 			creator: "admin"
 		};
-		db.collection('messages').insert(newLobby);
+		db.collection("messages").insert(newLobby);
 	});
 
 });
@@ -820,13 +820,13 @@ function arrayItemsInvalid(arrayCheck) {
 	for(let i = 0; (i < arrayCheck.length && !error); i++)
 		if(Array.isArray(arrayCheck[i]))
 			error = arrayItemsInvalid(arrayCheck[i]);
-		else if(arrayCheck[i] == "" || arrayCheck[i] == null || typeof arrayCheck[i] == 'undefined')
+		else if(arrayCheck[i] == "" || arrayCheck[i] == null || typeof arrayCheck[i] == "undefined")
 			error = true;
 	return error;
 }
 
 function getIP(req) {
-	return (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress ||
+	return (req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.socket.remoteAddress ||
      req.connection.socket.remoteAddress).split(",")[0];
 }
 
@@ -916,8 +916,8 @@ function loginAttempt(req, res) {
 					const mailOptions = {
 					  from: startup.email, // sender address
 					  to: user.email, // list of receivers
-					  subject: 'IP Verification link', // Subject line
-					  html: '<a href="' + link + '">Click here  to verify</a>'// plain text body
+					  subject: "IP Verification link", // Subject line
+					  html: "<a href="" + link + "">Click here  to verify</a>"// plain text body
 					};
 
 					res.json({status:"You are accessing this account from a new IP, a verification has been sent to your email"});
@@ -970,7 +970,7 @@ function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
 	 service: startup.emailType,
 	 host: startup.host,
 	 auth: {
-			type:'login',
+			type:"login",
 					user: FromEmail,
 					pass: FromPassword
 			},
@@ -984,7 +984,7 @@ function sendEmail(FromEmail, FromPassword, ToEmail, Subject, Content) {
 		from: FromEmail, // sender address
 		to: ToEmail, // list of receivers
 		subject: Subject, // Subject line
-		html: '<h3>' + Content + '</h3>'// plain text body
+		html: "<h3>" + Content + "</h3>"// plain text body
 	};
 	newTransport.sendMail(newMailOptions, function (err, info) {
 		 console.log(err);
@@ -996,17 +996,17 @@ function arraysAreEqual(value, other) {
 
 	if (type !== Object.prototype.toString.call(other)) return false;
 
-	if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false;
+	if (["[object Array]", "[object Object]"].indexOf(type) < 0) return false;
 
-	var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
-	var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+	var valueLen = type === "[object Array]" ? value.length : Object.keys(value).length;
+	var otherLen = type === "[object Array]" ? other.length : Object.keys(other).length;
 	if (valueLen !== otherLen) return false;
 
 	var compare = function (item1, item2) {
 
 		var itemType = Object.prototype.toString.call(item1);
 
-		if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+		if (["[object Array]", "[object Object]"].indexOf(itemType) >= 0) {
 			if (!isEqual(item1, item2)) return false;
 		}
 
@@ -1014,7 +1014,7 @@ function arraysAreEqual(value, other) {
 
 			if (itemType !== Object.prototype.toString.call(item2)) return false;
 
-			if (itemType === '[object Function]') {
+			if (itemType === "[object Function]") {
 				if (item1.toString() !== item2.toString()) return false;
 			} else {
 				if (item1 !== item2) return false;
@@ -1023,7 +1023,7 @@ function arraysAreEqual(value, other) {
 		}
 	};
 
-	if (type === '[object Array]') {
+	if (type === "[object Array]") {
 		for (var i = 0; i < valueLen; i++) {
 			if (compare(value[i], other[i]) === false) return false;
 		}
