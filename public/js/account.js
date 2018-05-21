@@ -24,8 +24,8 @@ $(document).ready(function() {
     window.location = window.location.href.split("/")[1] + "/cart";
   });
 });
-var username, password;
 
+var username, password;
 function success(data) {
   if (data.redirect === "/") {
     window.location = window.location.href.split("/")[1] + "/";

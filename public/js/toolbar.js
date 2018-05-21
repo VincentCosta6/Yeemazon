@@ -28,13 +28,13 @@ $(document).ready(function() {
   if (!($("#search").val()) || $("#search").val() == "Search for an item")
     $("#request").prop("hidden", true);
 
-  $("#search").click(function() {
+  $("#search").click(() => {
     if ($(this).val() == "Search for an item") {
       $(this).val("");
     }
   });
 
-  $("#search").blur(function() {
+  $("#search").blur(() => {
     if ($(this).val() == "") {
       $(this).val("Search for an item");
     }
@@ -42,7 +42,7 @@ $(document).ready(function() {
 });
 
 //XSS PREVENTION
-$(document).keypress(function(e) {
+$(document).keypress(e => {
   if ($("#search").val().includes("<") || $("#search").val().includes(">"))
     return alert("Improper search please dont use < or >");
   if (e.keyCode == 13 && $("#search").val() && $("#search").val() !== "Search for an item")

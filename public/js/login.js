@@ -22,12 +22,12 @@ function redirect(data) {
 function sendSignup() {
   window.location = window.location.href.split("/")[1] + "/signup";
 }
-$(document).ready(function() {
+$(document).ready(() => {
   $.get("/userInfo", success);
   $("#request").click(sendLogin);
   $("#signup").click(sendSignup);
 
-  $(".loginInput").keypress(function(e) {
+  $(".loginInput").keypress(e => {
     if (e.keyCode == 13)
       $("#request").click();
   });

@@ -1,12 +1,12 @@
 var numItems = 0;
 
-$(document).ready(function() {
+$(document).ready(() => {
   let searcher = ["popular", "under20", "yee"];
   for (let i in searcher)
     $.get("/findItems", {
       keywords: searcher[i],
       appending: (++i)
-    }, function(data) {
+    }, data => {
       //CHANGE THIS LATER
       $(".itemCont").css("height", 260 * (Math.floor((data.items.length / 6)) + 1));
       $("#sessionPageback").css("height", 1100 + (260 * (Math.floor((data.items.length / 6)) + 1)));
@@ -19,14 +19,14 @@ $(document).ready(function() {
   //LOAD FULL ITEM LIST
   $.get("/allItems", {
 
-  }, function(data) {
+  }, data => {
     for (let i = 0; i < data.items.length; i++)
       if (data.items[i])
         appender(data.items[i]._id, data.items[i].link, data.items[i].name, data.items[i].price, data.items[i].clicks, data.items[i].usersClicked.length, 4);
     numItems = data.items.length;
   });
 
-  setTimeout(function() {
+  setTimeout(() => {
     $(".itemCont").css("height", 260 * (Math.floor((numItems / 6)) + 1));
     $("#sessionPageback").css("height", 1100 + $(".itemCont").height());
   }, 500);
@@ -35,7 +35,7 @@ $(document).ready(function() {
 function appender(id, link, name, price, clicks, uniqueClicks, which) {
   var divCreator = "<div  id=\"" + id + "\" class=\"itemBox\"><img src=\"" + link + "\" style=\"cursor:pointer;width:140px;height:140px;margin-top:5px\"></img><br><label id=\"boxLabel\">" + name + "</label><br><label id=\"boxLabel\">$" + price + "</label></div>";
   $("#items" + which).append(divCreator);
-  $("#" + id).click(function() {
+  $("#" + id).click(() => {
     $.post("/itemClicked", {
       itemID: id
     }, (data) => {

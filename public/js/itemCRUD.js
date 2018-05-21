@@ -11,7 +11,7 @@ $(document).ready(() => {
     $("#okay2").toggle(!decide);
   });
 
-  $(".adminInput").focus(function() {
+  $(".adminInput").focus(() => {
     if ($(this).val() == "SearchID" || $(this).val() == "Item Name" || $(this).val() == "Item ID" || $(this).val() == "Item Description" ||
       $(this).val() == "Item Picture URL" || $(this).val() == "Item Price" || $(this).val() == "Key Words") {
       $(this).val("");
@@ -63,7 +63,7 @@ $(document).ready(() => {
   }
 
 
-  $("#addf").on("submit", (function(e) {
+  $("#addf").on("submit", (e => {
     e.preventDefault();
     var formData = new FormData(this);
     console.log($("#url").val());
@@ -90,7 +90,7 @@ $(document).ready(() => {
       }
     });
   }));
-  $("#updatef").on("submit", (function(e) {
+  $("#updatef").on("submit", (e => {
     e.preventDefault();
     var formData = new FormData(this);
     console.log($("#url").val());
