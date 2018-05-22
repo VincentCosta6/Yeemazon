@@ -29,9 +29,9 @@ $(document).ready(() => {
       _id: $("#IDSearch").val()
     }, (data) => {
       if (data.failed) {
-        $("#updater").toggle(false);
-        $("#okay2").toggle(false);
-        $("#okay").toggle(false);
+        // $("#updater").toggle(false);
+        // $("#okay2").toggle(false);
+        // $("#okay").toggle(false);
         $("#IDSearch").val("");
         alert("Failed");
       } else {
