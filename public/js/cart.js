@@ -38,7 +38,7 @@ $(document).ready(function() {
     });
   });
 
-  $.get("/cartItems", data => {
+  $.get("/cartItems", function(data) {
     for (var i = 0; i < data.items.length; i++) {
 
       let id = data.items[i]._id;

@@ -58,7 +58,7 @@ $(document).ready(() => {
   var x = 1,
     keepGoing = true,
     allowed = false;
-  refreshData = () => {
+  refreshData = function() {
     if (go) {
       $.get("/messageChange", {
         _id: id,

@@ -8,9 +8,7 @@ var routes = require("./routes");
 var clientSessions = require("client-sessions");
 
 var app = express();
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(fileUpload());
 
@@ -26,7 +24,8 @@ app.use("/js", express.static("./public/js"));
 app.use("/images", express.static("./public/images"));
 app.use(routes);
 
-if (startup.https === true) {
+if(startup.https === true)
+{
   var http = require("http");
   var https = require("https");
 
@@ -36,10 +35,12 @@ if (startup.https === true) {
     cert: fs.readFileSync("./ssl/cert.pem")
   };
 
-  http.createServer(app).listen(startup.port);
-  https.createServer(options, app).listen(startup.httpsPort);
-  console.log("\n   Yeemazon server has initialized! \n      IP: " + myIP.address() + " HTTP Port: " + startup.port + "\n      HTTPS Port: " + startup.httpsPort);
-} else {
-  app.listen(startup.port);
-  console.log("\n   Yeemazon server has initialized! \n      IP: " + myIP.address() + " Port: " + startup.port + "\n      HTTPS Port: DISABLED\n");
+	http.createServer(app).listen(startup.port);
+	https.createServer(options, app).listen(startup.httpsPort);
+	console.log("\n   Yeemazon server has initialized! \n      IP: " + myIP.address() + " HTTP Port: " + startup.port + "\n      HTTPS Port: " + startup.httpsPort);
+}
+else
+{
+	app.listen(startup.port);
+	console.log("\n   Yeemazon server has initialized! \n      IP: " + myIP.address() + " Port: " + startup.port + "\n      HTTPS Port: DISABLED\n");
 }

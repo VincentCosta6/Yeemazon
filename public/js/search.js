@@ -1,14 +1,14 @@
-$(document).ready(() => {
+$(document).ready(function() {
   $.get("/userInfo", success);
   $.get("/findItems", {
     keywords: retID(window.location.href)
-  }, data => {
+  }, function(data) {
     for (var i = 0; i < data.items.length; i++) {
 
       let id = data.items[i]._id;
       var divCreator = "<div id=\"" + id + "\" class=\"itemBox\"><img src=\"" + data.items[i].link + "\" style=\"width:140px;height:140px;margin-top:5px\"></img><br><label>" + data.items[i].name + "</label><br><label>$" + data.items[i].price + "</label></div>";
       $(".searchHolder").append(divCreator);
-      $("#" + id).click(() => {
+      $("#" + id).click(function() {
         window.location = window.location.href.split("/")[1] + "/item?id=" + id
       });
 
@@ -41,7 +41,7 @@ $(document).ready(() => {
       window.location = window.location.href.split("/")[1] + "/search?query=" + $("#search").val().toLowerCase();
   });
 
-  $(document).keypress(e => {
+  $(document).keypress(function(e) {
     if (e.keyCode == 13 && $("#search").val() && $("#search").val() !== "Search for an item")
       $("#request").click();
 
@@ -53,13 +53,13 @@ $(document).ready(() => {
 
   $("#request").prop("disabled", true);
 
-  $("#search").focus(() => {
+  $("#search").focus(function() {
     if ($(this).val() == "Search for an item") {
       $(this).val("");
     }
   });
 
-  $("#search").blur(() => {
+  $("#search").blur(function() {
     if ($(this).val() == "") {
       $(this).val("Search for an item");
     }

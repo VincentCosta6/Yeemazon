@@ -1,4 +1,4 @@
-$(document).ready(() => {
+$(document).ready(function() {
   $.get("/myOrders", (data) => {
     let orders = data.string.split("/");
     for (let i in orders) {

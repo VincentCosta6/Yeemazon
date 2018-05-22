@@ -22,7 +22,7 @@ $(document).ready(() => {
     keepGoing = true,
     allowed = false,
     mlength = 0;
-  repeat = () => {
+  repeat = function() {
     if (go) {
       $.get("/lobbyChange", {
         length: mlength
@@ -45,10 +45,10 @@ $(document).ready(() => {
   };
   repeat();
 });
-$(window).focus(() => {
+$(window).focus(function() {
   go = true;
 });
 
-$(window).blur(() => {
+$(window).blur(function() {
   go = false;
 });

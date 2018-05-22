@@ -19,12 +19,12 @@ function redirect(data) {
   else
     window.location = window.location.href.split("/")[0] + data.redirect;
 }
-$(document).ready(() => {
+$(document).ready(function() {
   $.get("/userInfo", success);
   $("#request").click(sendLogin);
   //$("#former").on("submit", submitForm);
 
-  $(document).keypress(e => {
+  $(document).keypress(function(e) {
     if (e.keyCode == 13)
       $("#request").click();
   });
