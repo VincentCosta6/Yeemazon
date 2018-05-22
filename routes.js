@@ -36,7 +36,6 @@ mongoose.connect(uri, options);
 let db = mongoose.connection;
 let products = require("./models/products");
 let users = require("./models/users");
-let devKeys = require("./models/devKeys");
 let messages = require("./models/messages");
 
 let version = require("./keyVersion").version;
@@ -49,9 +48,6 @@ db.once("open",function() {
 	});
 	products.count({}, (err, count) => {
 		console.log("Number of products: " + count);
-	});
-	devKeys.count({}, (err, count) => {
-		console.log("Number of keys: " + count);
 	});
 	messages.count({}, (err, count) => {
 		console.log("Number of chats: " + count);
@@ -712,21 +708,6 @@ router.post("/sendMessage", function(req, res) {
 		});
 	});
 
-router.post("/requestDevKey", function(req, res){
-
-});
-router.post("/generateDevKey", function(req, res){
-	users.findOne({username:req.session_state.username}, (err, user) => {
-		if(err) throw err;
-
-		let check = permissionAndXSSCheck(user, "admin", []);
-		if(check.passed === false) return res.json(check);
-
-		let newDevKey = {devKey:uuidv4()};
-		db.collection("devKeys").insert(newDevKey);
-	});
-});
-
 router.post("/updatePermission", function(req, res) {
 	let found = false;
 	for(let i in requests)
@@ -917,7 +898,7 @@ function loginAttempt(req, res) {
 					  from: startup.email, // sender address
 					  to: user.email, // list of receivers
 					  subject: "IP Verification link", // Subject line
-					  html: "<a href="" + link + "">Click here  to verify</a>"// plain text body
+					  html: "<a href=\"" + link + "\">Click here  to verify</a>"// plain text body
 					};
 
 					res.json({status:"You are accessing this account from a new IP, a verification has been sent to your email"});
