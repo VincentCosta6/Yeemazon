@@ -41,7 +41,7 @@ $(document).ready(function() {
     $.post("/addToCart", {
       itemID: id
     }, (data) => {
-      alert(((data.status) ? "Item added to cart" : "Something went wrong"));
+      alert(((data.status) ? "Item successfully added to your cart" : "Something went wrong, item has not been added to your cart"));
     });
   });
   $("#msg").click(() => {

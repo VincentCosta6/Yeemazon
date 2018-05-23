@@ -8,7 +8,7 @@ $(document).ready(() => {
     $("#addf").toggle(decide);
     $("#updatef").toggle(!decide);
     $("#okay").toggle(!decide);
-    $("#okay2").toggle(!decide);
+    //$("#okay2").toggle(!decide);
   });
 
   $(".adminInput").focus(function() {
@@ -33,7 +33,7 @@ $(document).ready(() => {
         // $("#okay2").toggle(false);
         // $("#okay").toggle(false);
         $("#IDSearch").val("");
-        alert("Failed");
+        alert("Failed - ID does not match a valid product");
       } else {
         $("#updater").toggle(true);
         $("#okay2").toggle(true);

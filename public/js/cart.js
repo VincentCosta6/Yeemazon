@@ -57,7 +57,7 @@ $(document).ready(function() {
           $("#" + id).remove();
           $(".itemLabel").html("Your cart has " + --lengther + " items");
           updateCost();
-          alert("Successful removal");
+          alert("Item has been removed from your cart");
         })
       };
       $("#" + id + "imger").click(redirect);

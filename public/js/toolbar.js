@@ -44,7 +44,7 @@ $(document).ready(function() {
 //XSS PREVENTION
 $(document).keypress(function(e) {
   if ($("#search").val().includes("<") || $("#search").val().includes(">"))
-    return alert("Improper search please dont use < or >");
+    return alert("Improper search, please dont use < or >");
   if (e.keyCode == 13 && $("#search").val() && $("#search").val() !== "Search for an item")
     $("#request").click();
 
