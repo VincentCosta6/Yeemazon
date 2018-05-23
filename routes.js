@@ -783,6 +783,10 @@ router.get("/updateSchema", function(req, res) {
 
 });
 
+router.use(function(req, res) {
+  return res.sendFile(__dirname + "\\public\\views\\404.html");
+});
+
 //////////////////////////END OF POST REQUESTS//////////////////////////////
 
 
