@@ -321,6 +321,7 @@ router.get("/messageLength", function(req, res) {
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
 		if(!lobby) return res.json({passed: false, reason:"Couldnt find lobby, it might have been deleted"});
+    res.sendFile(__dirname + "\\public\\views\\lobbyFinder.html");
 		return res.json({length: lobby.messages.length});
 	});
 });
