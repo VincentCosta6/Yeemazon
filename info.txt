@@ -10,26 +10,3 @@ Secret-Key: 6LfhUk4UAAAAAEf3g2FRVkhLt75ikTv66-iufaMW
 <script src='https://www.google.com/recaptcha/api.js'></script>
 
 <div class="g-recaptcha" data-sitekey="6LfhUk4UAAAAACFLoT8YhRJxxtEJuamEWGQXNhfb"></div>
-
-Image path format: "images/IMAGE.PNG"
-
-Still need to be finished as of 4/9/2018
-
--Ordering: Order the items in your cart, and show the total cost of the order
-
--Cart:
-  -Removing items from your cart
-
-  -Quantity of an item in your cart
-
--Items:
-  -Uploading images for products you post
-
-  -Add the creator of an item with contact information like their email
-
-  -Add number of clicks to the item page
-
-  -Add number of unique clicks to item page
-
--HTML:
-  -Add IP Verification status html page

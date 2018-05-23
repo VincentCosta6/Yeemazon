@@ -1,5 +1,0 @@
-- New messages notification
-
-- Consider implementing passport(probably not my personal passport is too integrated now)
-
-- Consider switching to CoinHive Proof of Work rather than ReCaptcha
