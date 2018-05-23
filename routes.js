@@ -18,6 +18,8 @@ const validd = require("mongoose").Types.ObjectId;
 var path = require("path");
 var fs = require("fs");
 
+const passport = require("passport");
+
 let formidable = require("formidable");
 
 const perms = ["viewer", "user", "moderator", "admin"];
@@ -57,6 +59,7 @@ db.on("error",function(err){
 	console.log(err);
 });
 
+
 let transporter = nodemailer.createTransport({
  service: startup.emailType,
  host: startup.host,
@@ -80,7 +83,8 @@ let requests = [];
 
 
 
-
+router.use(passport.initialize())
+router.use(passport.session())
 
 router.use(function (req, res, next) {
 	var found = false;
@@ -104,7 +108,7 @@ router.use(function (req, res, next) {
 
 router.post("/login", loginAttempt);
 
-router.post("/signup", function(req, res){
+router.post("/signup", function(req, res) {
 	let ip = getIP(req);
 
 	let bodyChecks = [req.body.username, req.body.password, req.body.email];
@@ -153,6 +157,7 @@ router.post("/signup", function(req, res){
 		messages.update({name: "Global Lobby"}, {$push: {Users: req.body.username, messages: req.body.username + " has joined Yeemazon"}}, (err, use) => {
 			if(err) throw err;
 		});
+    //insert
 		return res.json({redirect: "/session"});
 	});
 });
@@ -216,8 +221,6 @@ router.use(function(req, res, next) {
 	}
 	next();
 });
-
-
 
 router.get("/itemInfo", function(req, res){
 	if(!req.query.id || req.query.id === "")
@@ -321,7 +324,6 @@ router.get("/messageLength", function(req, res) {
 	messages.findOne({_id: req.query._id}, (err, lobby) => {
 		if(err) throw err;
 		if(!lobby) return res.json({passed: false, reason:"Couldnt find lobby, it might have been deleted"});
-    res.sendFile(__dirname + "\\public\\views\\lobbyFinder.html");
 		return res.json({length: lobby.messages.length});
 	});
 });
@@ -841,7 +843,7 @@ function isIPBanned(ip) {
 	return false;
 }
 
-function loginAttempt(req, res) {
+function loginAttempt(req, res, next) {
 	let ip = getIP(req);
 	if(isIPBanned(ip)) return res.json({status:"Banned"});
 	let bodyChecks = [req.body.username, req.body.password];
@@ -879,7 +881,7 @@ function loginAttempt(req, res) {
 				user.sessionKeys.push(sessionKey);
 				user.save((err) =>{
 					console.log("User: " + user.username + " has logged in on IP: " + ip);
-					res.json({redirect:"/session"});
+          return res.json({redirect:"/session"});
 				});
 			}
 			else
